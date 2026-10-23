@@ -589,6 +589,9 @@ export class Hud {
     this.vignette.style.setProperty("--threat", v.toFixed(2));
   }
 
+  /** Gọi mỗi khi một trang giấy được mở ra (kịch bản biết người chơi đã đọc tới mặt sau chưa). */
+  onPage?: (note: Note, page: number) => void;
+
   /** Mở một tờ giấy. `onLateInk`: gọi khi một dòng mực lạ bắt đầu tự viết (để phát âm thanh). */
   openNote(note: Note, onLateInk?: () => void): void {
     this.note = note;
@@ -618,6 +621,7 @@ export class Hud {
   private showPage(i: number): void {
     const note = this.note!;
     this.page = i;
+    this.onPage?.(note, i);
     window.clearTimeout(this.lateTimer);
     this.readerBody.replaceChildren();
     // Tách "[[...]]" thành span mực lạ, "~~...~~" thành chữ bị gạch; phần còn lại là chữ thường (không dùng innerHTML).

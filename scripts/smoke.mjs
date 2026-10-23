@@ -116,6 +116,8 @@ try {
   await page.keyboard.press("KeyR");
   await g(() => document.getElementById("panel-settings").classList.add("hidden"));
   await aim([-5.4, 2.6], [-6.32, 1.11, 2.6]);
+  // Đợi khung hình kế cập nhật lời nhắc (SwiftShader chậm: 300 ms đôi khi chưa đủ một khung).
+  await page.waitForFunction(() => document.querySelector("#prompt .key")?.textContent === "R", null, { timeout: 3000 }).catch(() => {});
   const promptKey = await g(() => document.querySelector("#prompt .key")?.textContent);
   await page.keyboard.press("KeyR");
   await sleep(300);

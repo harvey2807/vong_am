@@ -32,6 +32,7 @@ import { PhucKy } from "./PhucKy";
 import { Backland } from "./Backland";
 import { Coffins } from "./Coffins";
 import { Past } from "./Past";
+import { Clues } from "./Clues";
 import { FLOOR1_Y, STAIR_HOLE, type Stair } from "./floors";
 
 const WALL_H = 3;
@@ -46,6 +47,8 @@ const SKY_NIGHT = new Color3(0.035, 0.045, 0.065);
 const SKY_INDOOR = new Color3(0.012, 0.012, 0.016);
 const TIN_CODE = "1607";
 const TIN_POS = new Vector3(5.45, 0.95, -2.2);
+/** Đêm 1: giây đứng yên châm mỗi nén nhang (ba nén). */
+const INCENSE_TIME = 1.6;
 /** Ngày giỗ người khác trong nhà — có trong tờ giấy hồng điều, dễ nhầm. */
 const OTHER_GIO = ["2212", "0302", "0805"];
 
@@ -138,6 +141,9 @@ export class House {
   private moonlight!: PointLight;
   private altarLamps: Mesh[] = [];
   private incenseTips: Mesh[] = [];
+  /** Đêm 1: số nén đã thắp (0..3), và giây còn lại của nén đang châm. */
+  private sticksLit = 0;
+  private lighting = 0;
   private photoTex!: DynamicTexture;
   private tvTex!: DynamicTexture;
   private tvLight!: PointLight;
@@ -192,6 +198,7 @@ export class House {
     if (this.night !== 2.5) this.phucKy = new PhucKy(scene, this, game);
     if (this.night !== 2.5) this.coffins = new Coffins(scene, this, game);
     if (this.past) this.pastScene = new Past(scene, this, game);
+    if (this.night >= 1 && this.night !== 2.5 && !this.past) new Clues(scene, this, game);
     if (this.night >= 2 && this.night !== 2.5 && !this.past) this.backland = new Backland(scene, this, game);
     this.placeRelics();
     this.buildNav();
@@ -567,7 +574,8 @@ export class House {
       prompt: () => {
         if (this.director.has("ending")) return null;
         if (this.night >= 2) return this.director.has("all_shards") && !this.director.has("bowl_placed") ? "Đặt chén men lam lên bàn thờ" : null;
-        return this.director.has("lit_incense") ? null : this.director.has("knocking") ? "Thắp nhang" : "Bát nhang";
+        if (this.director.has("lit_incense") || this.lighting > 0) return null;
+        return this.director.has("knocking") ? `Thắp nén nhang (${this.sticksLit + 1}/3)` : "Bát nhang";
       },
       interact: () => {
         if (this.night >= 2) {
@@ -575,12 +583,14 @@ export class House {
           return;
         }
         if (!this.director.has("knocking")) {
-          this.game.hud.subtitle("Nhang tàn hết rồi. Tối nay phải thắp cho bà một nén.", 3.5);
+          this.game.hud.subtitle("Nhang tàn hết rồi. Tối nay phải thắp cho bà ba nén.", 3.5);
           return;
         }
-        this.lightIncense();
-        this.game.audio.play("click");
-        this.director.set("lit_incense");
+        // Thắp từng nén: quẹt diêm, châm, cắm — đứng yên vài giây trong lúc nó vẫn đi tuần.
+        this.lighting = INCENSE_TIME;
+        this.game.player.disable();
+        this.game.audio.play("click", bowl.position);
+        this.game.audio.play("rustle", bowl.position);
       },
     });
 
@@ -680,6 +690,8 @@ export class House {
       interact: () => {
         this.game.openNote(notes.diary);
         this.director.set("read_diary");
+        // Kẹp giữa sổ: mảnh đầu tiên của trang bà xé.
+        this.game.findFragment(0);
       },
     });
   }
@@ -774,10 +786,16 @@ export class House {
       prompt: () => {
         if (this.night >= 4) return null;
         if (this.night === 3) return this.director.has("read_master_note") && !this.director.has("has_matches") ? "Lấy hộp diêm" : null;
-        if (this.night !== 1 || this.director.has("has_key")) return null;
+        if (this.night !== 1) return null;
+        if (this.director.has("has_key")) return "Xem tấm ảnh nhỏ trong hộp";
         return this.director.has("read_rules") ? "Mở khóa số" : "Hộp bánh quy";
       },
       interact: () => {
+        if (this.night === 1 && this.director.has("has_key")) {
+          this.game.openNote(notes.tinPhoto);
+          this.director.set("saw_tin_photo");
+          return;
+        }
         if (this.night === 3) {
           this.game.audio.play("rattle", box.position);
           this.collect("matches", "Hộp diêm Thống Nhất, nằm giữa kim chỉ. Còn đúng ba que.");
@@ -1121,6 +1139,29 @@ export class House {
     this.photoTex.update();
   }
 
+  /** Đang châm một nén (giây còn lại) — xong thì nén đó đỏ đầu; đủ ba nén là thắp xong. */
+  private tickIncense(dt: number): void {
+    if (this.lighting <= 0) return;
+    if (this.game.knocker.state === "caught") {
+      this.lighting = 0;
+      return;
+    }
+    this.lighting -= dt;
+    if (this.lighting > 0) return;
+    const tip = this.incenseTips[this.sticksLit];
+    (tip.material as StandardMaterial).emissiveColor = new Color3(1, 0.35, 0.1);
+    this.game.fx.addSmoke(tip.position);
+    this.sticksLit++;
+    this.game.audio.play("click", tip.position);
+    if (this.sticksLit >= this.incenseTips.length) {
+      this.lightIncense();
+      this.director.set("lit_incense");
+    } else {
+      this.game.hud.subtitle(`Nén thứ ${this.sticksLit === 1 ? "nhất" : "hai"}.`, 1.5);
+    }
+    this.game.resumeControl();
+  }
+
   private lightIncense(): void {
     for (const tip of this.incenseTips) {
       (tip.material as StandardMaterial).emissiveColor = new Color3(1, 0.35, 0.1);
@@ -1166,6 +1207,7 @@ export class House {
     this.pastScene?.update(dt);
     this.fields?.update(dt);
     this.yard.update(dt);
+    this.tickIncense(dt);
     if (this.powerTime > 0) {
       this.powerTime -= dt;
       if (this.powerTime <= 0 && !this.director.has("ending")) {

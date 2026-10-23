@@ -40,11 +40,41 @@
     ]
   },
   {
+    "id": "mam_seen",
+    "comment": "Đời thường bất thường: mâm cơm cúng đầu thất — bốn chén, bốn đôi đũa.",
+    "when": { "none": ["saw_mam"], "visible": "mam", "near": "mam", "nearRadius": 2.6 },
+    "actions": [
+      { "type": "setFlag", "flag": "saw_mam" },
+      { "type": "subtitle", "text": "Mâm cơm cúng đầu thất cô Ba dọn sẵn từ chiều. Bốn chén, bốn đôi đũa.", "duration": 4 }
+    ]
+  },
+  {
+    "id": "mam_fifth",
+    "comment": "Rời mắt khỏi mâm một lúc thì có thêm chén thứ năm: cháo trắng, thứ người ta cúng cô hồn.",
+    "when": { "all": ["saw_mam", "read_rules"], "none": ["mam_fifth"], "hidden": "mam", "delay": 4 },
+    "actions": [
+      { "type": "show", "target": "bowl5", "visible": true },
+      { "type": "setFlag", "flag": "mam_fifth" }
+    ]
+  },
+  {
+    "id": "mam_fifth_seen",
+    "when": { "all": ["mam_fifth"], "none": ["mam_fifth_seen"], "visible": "bowl5", "near": "mam", "nearRadius": 3 },
+    "actions": [
+      { "type": "setFlag", "flag": "mam_fifth_seen" },
+      { "type": "hush", "seconds": 8 },
+      { "type": "wait", "seconds": 0.6 },
+      { "type": "subtitle", "text": "…Năm chén. Chén thứ năm nằm sát mép sập, không có đũa, đựng cháo trắng loãng.", "duration": 4.5 },
+      { "type": "wait", "seconds": 5 },
+      { "type": "subtitle", "text": "Cháo trắng là thứ người ta cúng cô hồn. Ai bày ra đây?", "duration": 4 }
+    ]
+  },
+  {
     "id": "obj_key",
     "comment": "Câu đố hộp bánh quy: mã = ngày giỗ ông (âm lịch, ngày trước tháng sau). Manh mối: trang 2 lời bà dặn, tờ giấy hồng điều cạnh bàn thờ (ngày Rằm bị gạch), lịch bloc dưới bếp (Rằm = 15/7).",
     "when": { "all": ["read_rules"], "none": ["has_key"] },
     "actions": [
-      { "type": "objective", "text": "Lấy chìa khóa phòng bà trong hộp bánh quy dưới bếp", "hints": ["Tờ giấy của bà có hai trang — lật bằng {left} / {right}. Trang sau nói mã khóa là ngày giỗ ông, ngày trước tháng sau.", "Cạnh bàn thờ, trên tường bên trái, có tờ giấy hồng ghi ngày giỗ của cả nhà theo âm lịch.", "Bà gạch chữ Rằm: ông mất sáng hôm sau đêm Rằm tháng Bảy. Tờ lịch dưới bếp ghi Rằm tháng Bảy là ngày mấy.", "Rằm là ngày 15 → ông mất ngày 16 tháng 7. Mã là 1 6 0 7."] }
+      { "type": "objective", "text": "Lấy chìa khóa phòng bà trong hộp bánh quy dưới bếp", "hints": ["Tờ giấy của bà có ba trang — lật bằng {left} / {right}. Trang hai nói mã khóa là ngày giỗ ông, ngày trước tháng sau.", "Cạnh bàn thờ, trên tường bên trái, có tờ giấy hồng ghi ngày giỗ của cả nhà theo âm lịch.", "Bà gạch chữ Rằm: ông mất sáng hôm sau đêm Rằm tháng Bảy. Tờ lịch dưới bếp ghi Rằm tháng Bảy là ngày mấy.", "Rằm là ngày 15 → ông mất ngày 16 tháng 7. Mã là 1 6 0 7."] }
     ]
   },
   {
@@ -169,7 +199,7 @@
     "id": "obj_incense",
     "when": { "all": ["knocking"], "none": ["ending"], "delay": 8 },
     "actions": [
-      { "type": "objective", "text": "Đừng mở cửa. Thắp nhang cho bà ở bàn thờ", "hints": ["Bát nhang nằm lệch sang phải trên bàn thờ — thắp được mà không cần nhìn thẳng vào ảnh thờ.", "Đèn đã tắt: đừng nhìn thẳng vào ảnh thờ (điều dặn thứ 3). Bật đèn pin ({flashlight}) thì thấy đường, nhưng nó cũng thấy mình từ xa hơn.", "Bị đuổi thì chạy vào tủ áo trong phòng bà. Khi nó đứng ngoài cửa tủ, giữ {breath} để nín thở."] }
+      { "type": "objective", "text": "Đừng mở cửa. Thắp ba nén nhang cho bà ở bàn thờ", "hints": ["Bát nhang nằm lệch sang phải trên bàn thờ — thắp được mà không cần nhìn thẳng vào ảnh thờ.", "Mỗi nén phải đứng yên châm vài giây. Đợi nó đi khuất rồi hãy châm nén kế.", "Đèn đã tắt: đừng nhìn thẳng vào ảnh thờ (điều dặn thứ 3). Bật đèn pin ({flashlight}) thì thấy đường, nhưng nó cũng thấy mình từ xa hơn.", "Tin nhắn tới sau tiếng gõ thứ ba không đáng tin. Mặt sau tờ giấy của bà có ghi ({left}/{right} để lật trang).", "Bị đuổi thì chạy vào tủ áo trong phòng bà. Khi nó đứng ngoài cửa tủ, giữ {breath} để nín thở."] }
     ]
   },
   {
@@ -244,6 +274,101 @@
       { "type": "subtitle", "text": "“Út ơi, bà về rồi nè. Mở cửa cho bà.”", "duration": 4.5, "voice": true },
       { "type": "wait", "seconds": 5 },
       { "type": "subtitle", "text": "Đồng hồ quả lắc ngoài hành lang… ngừng kêu từ lúc nào.", "duration": 4 }
+    ]
+  },
+  {
+    "id": "knock_at_kitchen",
+    "when": { "all": ["knocking"], "none": ["knock_variant", "ending", "caught"], "near": "kitchenTin", "nearRadius": 3, "delay": 6 },
+    "actions": [
+      { "type": "setFlag", "flag": "knock_variant" },
+      { "type": "sound", "sound": "splash", "at": "kitchenTin" },
+      { "type": "subtitle", "text": "Lu nước dưới bếp tự gợn sóng, như vừa có ai nhúng tay vào.", "duration": 4 }
+    ]
+  },
+  {
+    "id": "knock_elsewhere",
+    "comment": "Không đứng gần chỗ nào ở trên thì thôi — không biến thể nào chạy.",
+    "when": { "all": ["knocking"], "none": ["knock_variant"], "delay": 9 },
+    "actions": [
+      { "type": "setFlag", "flag": "knock_variant" }
+    ]
+  },
+  {
+    "id": "feet_gone",
+    "when": { "all": ["feet_shown"], "none": ["feet_gone"], "visible": "childFeet", "delay": 1.6 },
+    "actions": [
+      { "type": "setFlag", "flag": "feet_gone" },
+      { "type": "show", "target": "childFeet", "visible": false },
+      { "type": "subtitle", "text": "…Không còn ai.", "duration": 2.5 }
+    ]
+  },
+  {
+    "id": "feet_timeout",
+    "when": { "all": ["feet_shown"], "none": ["feet_gone"], "delay": 12 },
+    "actions": [
+      { "type": "setFlag", "flag": "feet_gone" },
+      { "type": "show", "target": "childFeet", "visible": false }
+    ]
+  },
+  {
+    "id": "fake_grandma",
+    "comment": "Thử dòng chữ sau tờ dặn: “Đừng tin những gì bà dặn sau tiếng gõ thứ ba.”",
+    "when": { "all": ["knocking"], "none": ["ending", "caught", "lit_incense"], "delay": 16 },
+    "actions": [
+      { "type": "message", "from": "Bà", "text": "Đừng thắp nhang. Nó đang đứng sau lưng con.", "eerie": true },
+      { "type": "wait", "seconds": 2.4 },
+      { "type": "sound", "sound": "breath", "at": "behindPlayer" },
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "subtitle", "text": "…Sau lưng không có ai.", "duration": 3 },
+      { "type": "setFlag", "flag": "fake_text" }
+    ]
+  },
+  {
+    "id": "fake_doubt_back",
+    "when": { "all": ["fake_text", "read_rules_back"], "none": ["ending"], "delay": 1 },
+    "actions": [
+      { "type": "subtitle", "text": "Mặt sau tờ giấy bà để lại: “Đừng tin những gì bà dặn sau tiếng gõ thứ ba.”", "duration": 5 }
+    ]
+  },
+  {
+    "id": "fake_doubt",
+    "when": { "all": ["fake_text"], "none": ["read_rules_back", "ending"], "delay": 1 },
+    "actions": [
+      { "type": "subtitle", "text": "Bà dặn thắp nhang cho bà. Giờ bà lại nhắn đừng thắp?", "duration": 4 }
+    ]
+  },
+  {
+    "id": "knock_at_door",
+    "when": { "all": ["knocking"], "none": ["knock_variant", "ending", "caught"], "near": "frontDoor", "nearRadius": 2.6, "delay": 6 },
+    "actions": [
+      { "type": "setFlag", "flag": "knock_variant" },
+      { "type": "sound", "sound": "whisper", "at": "frontDoor" },
+      { "type": "subtitle", "text": "“Út ơi… mẹ nè. Mẹ về rồi. Mở cửa cho mẹ.”", "duration": 4, "voice": true },
+      { "type": "wait", "seconds": 4.5 },
+      { "type": "subtitle", "text": "Mẹ đang ở Đài Loan. Chiều nay mẹ còn nhắn từ xưởng.", "duration": 4 }
+    ]
+  },
+  {
+    "id": "knock_at_living",
+    "when": { "all": ["knocking"], "none": ["knock_variant", "ending", "caught"], "near": "altar", "nearRadius": 3.6, "delay": 6 },
+    "actions": [
+      { "type": "setFlag", "flag": "knock_variant" },
+      { "type": "show", "target": "childFeet", "visible": true },
+      { "type": "setFlag", "flag": "feet_shown" },
+      { "type": "wait", "seconds": 0.8 },
+      { "type": "subtitle", "text": "…Cạnh bàn thờ có ai đứng. Chỉ thấy hai bàn chân trần, nhỏ xíu. Không một tiếng động.", "duration": 4.5 }
+    ]
+  },
+  {
+    "id": "knock_at_bedroom",
+    "when": { "all": ["knocking"], "none": ["knock_variant", "ending", "caught"], "near": "bedroomInside", "nearRadius": 3, "delay": 6 },
+    "actions": [
+      { "type": "setFlag", "flag": "knock_variant" },
+      { "type": "sound", "sound": "step", "at": "bedroomDoorOut" },
+      { "type": "wait", "seconds": 0.7 },
+      { "type": "sound", "sound": "step", "at": "bedroomDoorOut" },
+      { "type": "wait", "seconds": 1.2 },
+      { "type": "subtitle", "text": "Bước chân dừng ngay ngoài cửa phòng. Dưới khe cửa có bóng hai bàn chân… nhỏ xíu.", "duration": 4.5 }
     ]
   },
   {
@@ -343,6 +468,8 @@
       { "type": "entity", "do": "vanish" },
       { "type": "subtitle", "text": "Khói nhang bốc thẳng lên. Tiếng gõ ngừng hẳn.", "duration": 5 },
       { "type": "tension", "add": -0.6 },
+      { "type": "wait", "seconds": 3.5 },
+      { "type": "message", "from": "Bà", "text": "Con thắp nhang cho ai vậy?", "eerie": true },
       { "type": "wait", "seconds": 3.5 },
       { "type": "sound", "sound": "gecko", "at": "altarWall" },
       { "type": "wait", "seconds": 3 },

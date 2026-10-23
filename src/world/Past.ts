@@ -14,6 +14,10 @@ export class Past {
   private readonly kit: PropKit;
   private valance!: Mesh;
   private faceTex!: DynamicTexture;
+  private kid!: TransformNode;
+  private under!: HidingSpot;
+  /** Hai chiếc dép con nít dưới gầm bàn thờ — mỗi đứa một chiếc. Gần sáng một chiếc được nhặt lên. */
+  private sandals: Mesh[] = [];
   private planeTime = 0;
 
   constructor(
@@ -83,6 +87,7 @@ export class Past {
     // Đứa trẻ dưới gầm bàn thờ: áo sơ mi trắng, quần sọt, tóc đen. Đầu ở phía z lớn (gần chỗ mình chui vào).
     const kid = new TransformNode("pastKid", this.scene);
     kid.position.set(-5.95, 0, 0);
+    this.kid = kid;
     const white = k.color("kidShirt", new Color3(0.82, 0.8, 0.74), 0.05);
     const shorts = k.color("kidShorts", new Color3(0.12, 0.14, 0.2));
     const legs = k.color("kidSkin", new Color3(0.62, 0.48, 0.38), 0.04);
@@ -103,7 +108,7 @@ export class Past {
     head.position.set(0, 0.14, 2.96);
     head.material = k.color("kidHair", new Color3(0.05, 0.04, 0.035));
     this.faceTex = new DynamicTexture("pastKidFace", { width: 64, height: 64 }, this.scene, false, Texture.TRILINEAR_SAMPLINGMODE);
-    this.drawFace(false);
+    this.drawFace();
     const fm = new StandardMaterial("pastKidFaceMat", this.scene);
     fm.diffuseTexture = this.faceTex;
     fm.emissiveColor = new Color3(0.35, 0.32, 0.28);
@@ -119,6 +124,16 @@ export class Past {
     glow.intensity = 0.35;
     glow.range = 1.8;
 
+    const rubber = k.color("sandal", new Color3(0.25, 0.32, 0.5));
+    for (const [x, z, yaw] of [[-5.85, 3.12, 0.3], [-6.05, 3.02, -0.5]]) {
+      const s = MeshBuilder.CreateBox("pastSandal", { width: 0.07, height: 0.018, depth: 0.15 }, this.scene);
+      s.position.set(x, 0.009, z);
+      s.rotation.y = yaw;
+      s.material = rubber;
+      s.isPickable = false;
+      this.sandals.push(s);
+    }
+
     const under: HidingSpot = {
       inside: new Vector3(-5.95, 0.3, 3.55),
       insideYaw: Math.PI,
@@ -129,6 +144,7 @@ export class Past {
       kind: "altar",
       exit: null,
     };
+    this.under = under;
     makeInteractable(this.valance, {
       prompt: () => {
         const d = this.game.director;
@@ -147,21 +163,19 @@ export class Past {
     });
   }
 
-  /** Mặt đứa trẻ: nhắm mắt, hoặc mở — mắt người, không có hai chấm mực. */
-  private drawFace(open: boolean): void {
+  /** Mặt đứa trẻ, mắt nhắm. (Không bao giờ cho thấy nó mở mắt: người chơi chưa được biết mình là đứa nào.) */
+  private drawFace(): void {
     const ctx = this.faceTex.getContext() as unknown as CanvasRenderingContext2D;
     drawHumanFace(ctx, 64, 64);
-    if (!open) {
-      ctx.fillStyle = "#c9b8a2";
-      ctx.fillRect(64 * 0.25, 64 * 0.38, 64 * 0.5, 64 * 0.14);
-      ctx.strokeStyle = "#2a211a";
-      ctx.lineWidth = 1.5;
-      for (const dx of [-0.15, 0.15]) {
-        ctx.beginPath();
-        ctx.moveTo(64 * (0.5 + dx) - 6, 64 * 0.46);
-        ctx.quadraticCurveTo(64 * (0.5 + dx), 64 * 0.49, 64 * (0.5 + dx) + 6, 64 * 0.46);
-        ctx.stroke();
-      }
+    ctx.fillStyle = "#c9b8a2";
+    ctx.fillRect(64 * 0.25, 64 * 0.38, 64 * 0.5, 64 * 0.14);
+    ctx.strokeStyle = "#2a211a";
+    ctx.lineWidth = 1.5;
+    for (const dx of [-0.15, 0.15]) {
+      ctx.beginPath();
+      ctx.moveTo(64 * (0.5 + dx) - 6, 64 * 0.46);
+      ctx.quadraticCurveTo(64 * (0.5 + dx), 64 * 0.49, 64 * (0.5 + dx) + 6, 64 * 0.46);
+      ctx.stroke();
     }
     this.faceTex.update();
   }
@@ -182,8 +196,16 @@ export class Past {
           exit: null,
         });
         return true;
-      case "pastEyes":
-        this.drawFace(true);
+      case "pastUnder":
+        // Góc nhìn thứ hai: lại nằm dưới gầm bàn thờ — đứa kia đã được bế đi, chỉ còn hai chiếc dép. Hồn và vía
+        // đều nhớ đêm đó; người chơi đã ở cả hai chỗ.
+        this.kid.setEnabled(false);
+        this.valance.setEnabled(true);
+        this.game.hide({ ...this.under, insidePitch: 0.32 });
+        return true;
+      case "pastSandalTaken":
+        this.sandals[0].setEnabled(false);
+        this.game.audio.play("rustle", this.sandals[0].position);
         return true;
     }
     return false;

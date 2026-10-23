@@ -3,6 +3,7 @@ import type { Game } from "../core/Game";
 import { makeInteractable } from "../interaction/Interaction";
 import type { House } from "./House";
 import { barredWindowUrl, shutterUrl, signUrl, windowFaceUrl } from "./decorTextures";
+import { dogThiefUrl, drainAdUrl, muGraffitiUrl, smallAdUrl, t1GraffitiUrl } from "./streetAds";
 
 /** Lòng ngõ: x -2..2, từ cửa nhà bà (z -6) ra tới đầu ngõ (z -40). */
 const HALF = 2.0;
@@ -53,6 +54,7 @@ export class Alley {
     RIGHT.forEach((f, i) => this.facade(f, 1, i));
     this.buildWires();
     this.buildProps();
+    this.buildAds();
     this.buildLights();
     this.buildNav();
     game.fx.startRain(new Vector3(-HALF, 0, Z_END), new Vector3(HALF, 0, Z_DOOR));
@@ -269,6 +271,47 @@ export class Alley {
     this.house.anchors.set("gate", new Vector3(0, 0, -8));
     this.house.anchors.set("alleyBehind", new Vector3(0, 0, -39.3));
     this.house.anchors.set("alleyMid", new Vector3(0, 0, -21));
+  }
+
+  /**
+   * Rao vặt và sơn xịt dọc hai bên tường (xem streetAds.ts). Tránh cửa sổ, cửa cuốn và nhà số 9 — nhà đó tường sạch trơn,
+   * không ai dám dán gì lên. Vài tấm đọc được: chút hài ở đầu đêm, trước khi mọi chuyện bắt đầu.
+   */
+  private buildAds(): void {
+    const look = (mesh: Mesh, prompt: string, line: string) => {
+      makeInteractable(mesh, { prompt: () => prompt, interact: () => this.game.hud.subtitle(line, 6) });
+    };
+    // Nhô ra khỏi mặt tường vài li: dán chồng lên cửa cuốn, cửa sổ cũng không bị chớp hình.
+    const put = (name: string, w: number, h: number, side: number, z: number, y: number, mat: StandardMaterial, pickable = false) => {
+      const d = this.decal(name, w, h, side, z, y, mat, pickable);
+      d.position.x -= side * 0.006;
+      return d;
+    };
+    // Đầu ngõ, tường trái: bảng cảnh báo trộm chó.
+    const dog = put("adDog", 0.9, 0.62, -1, -39.4, 1.75, this.texMat("adDog", dogThiefUrl(), 0.08), true);
+    look(dog, "Bảng cảnh báo", "“CẢNH BÁO: XÓM CÓ TRỘM CHÓ. BÀ CON CẢNH GIÁC.”\nDưới có ai viết thêm bằng bút lông: “Trộm luôn con nhà số 7 giùm, sủa quá trời.”");
+    // Tường trái, đoạn nhà cao: sơn xịt fan T1 và fan MU sát nhau.
+    const t1 = put("adT1", 1.5, 0.94, -1, -23.15, 1.35, this.texMat("adT1", t1GraffitiUrl(), 0.05, true), true);
+    look(t1, "Chữ sơn xịt", "“T1 VÔ ĐỊCH CKTG 2023 — FAKER BẤT TỬ.”\nHồi đó cả ngõ chen nhau coi chung kết ở tiệm net đầu ngõ, la tới sáng.");
+    const mu = put("adMU", 1.45, 1.0, -1, -27.85, 1.4, this.texMat("adMU", muGraffitiUrl(), 0.05, true), true);
+    look(mu, "Chữ sơn xịt", "“GLORY GLORY MU — VÔ ĐỊCH FA CUP 2024.”\nNgay dưới, nét khác: “Ngoại hạng thì đợi năm sau.” Rồi nét khác nữa: “Năm nào cũng đợi.”");
+    // Tem thông cống dán tràn lan, cao thấp lộn xộn, hai bên tường.
+    const drain: [number, number, number, number][] = [
+      [-1, -38.9, 0.95, 0], [-1, -36.4, 1.9, 1], [1, -39.1, 1.2, 1], [1, -35.4, 0.8, 0],
+      [-1, -30.2, 1.25, 1], [1, -29.3, 1.7, 0], [1, -26.4, 0.9, 1], [-1, -21.4, 1.0, 0],
+      [-1, -17.2, 1.6, 1], [1, -12.0, 2.05, 0], [-1, -11.2, 1.15, 1], [1, -9.6, 1.0, 0], [-1, -7.4, 1.5, 0],
+    ];
+    drain.forEach(([side, z, y, v], i) => {
+      const d = put("adDrain", 0.42, 0.16, side, z, y, this.texMat(`adDrain${v}`, drainAdUrl(v), 0.06, true), i === 0);
+      d.rotation.z = (Math.random() - 0.5) * 0.12;
+      if (i === 0) {
+        look(d, "Tem dán tường", "Khoan cắt bê tông, thông cống nghẹt, hút hầm cầu.\nNgõ nào ở Việt Nam cũng có cái tem này. Số điện thoại toàn số 4.");
+      }
+    });
+    // Giấy cho thuê phòng, rút tiền thẻ tín dụng.
+    put("adRoom", 0.36, 0.22, 1, -9.0, 1.55, this.texMat("adRoom", smallAdUrl("room"), 0.06, true)).rotation.z = 0.05;
+    put("adCard", 0.34, 0.2, -1, -30.9, 1.65, this.texMat("adCard", smallAdUrl("card"), 0.06, true)).rotation.z = -0.07;
+    put("adCard", 0.34, 0.2, 1, -32.8, 1.0, this.texMat("adCard", smallAdUrl("card"), 0.06, true)).rotation.z = 0.04;
   }
 
   /** Ba bóng đèn sợi đốt treo giữa ngõ — tắt/chập chờn cùng setLights như đèn trong nhà. */

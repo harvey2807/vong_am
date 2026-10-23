@@ -22,6 +22,8 @@ import { Knocker } from "../entity/Knocker";
 import { Stalker } from "../entity/Stalker";
 import { Effigies } from "../entity/Effigy";
 import { allRelicsFound } from "./relics";
+import { FRAGMENTS, foundFragments, fragmentNote, markFragment } from "./fragments";
+import notesData from "../data/notes.json";
 import { Scarecrows } from "../entity/Scarecrow";
 import { ALTAR_EFFIGIES } from "../world/Funeral";
 import { InteractionSystem } from "../interaction/Interaction";
@@ -263,6 +265,15 @@ export class Game implements DirectorContext {
     for (const f of lv.flags) this.director.set(f);
     // Đã gom đủ di vật từ những lần chơi trước: Đêm cuối mở Kết thật.
     if (allRelicsFound()) this.director.set("all_relics");
+    // Mảnh trang sổ đã tìm ở những lần chơi trước: bật cờ, và có sẵn trong sổ tay để đọc lại.
+    const pieces = foundFragments();
+    for (const i of pieces) this.director.set(`fragment_${i}`);
+    if (pieces.size >= FRAGMENTS.length) this.director.set("fragments_all");
+    if (pieces.size) this.papers.set(fragmentNote(pieces).title, fragmentNote(pieces));
+    // Lật tới mặt sau lời bà dặn (chữ của chính Út) — kịch bản Đêm 1 nhắc lại dòng đó sau tiếng gõ thứ ba.
+    this.hud.onPage = (note, page) => {
+      if (note.title === notesData.rules.title && page === 2) this.director.set("read_rules_back");
+    };
     this.house.setPhoto(lv.photo);
     if (lv.rain) {
       this.fx.startRain(new Vector3(6.2, 0, -9), new Vector3(13.2, 0, 3.1));
@@ -532,6 +543,28 @@ export class Game implements DirectorContext {
       this.playtest.log("action", `late-ink:${note.title}`);
     });
     this.player.disable();
+  }
+
+  /**
+   * Tìm thấy mảnh trang sổ thứ `i` (0..3): nhớ qua mọi lần chơi, ghép vào trang "Trang sổ bị xé" trong sổ tay.
+   * Lần đầu thấy thì hiện nguyên câu trên mảnh giấy.
+   */
+  findFragment(i: number): void {
+    const first = markFragment(i);
+    this.director.set(`fragment_${i}`);
+    const found = foundFragments();
+    if (found.size >= FRAGMENTS.length) this.director.set("fragments_all");
+    const note = fragmentNote(found);
+    this.papers.set(note.title, note);
+    if (!first) return;
+    this.audio.play("rustle");
+    this.playtest.log("action", `fragment:${i}`);
+    window.setTimeout(() => this.hud.subtitle(`Một mảnh giấy xé, cháy mép, chữ bà (${found.size}/4):\n“${FRAGMENTS[i]}”`, 6), 1200);
+  }
+
+  /** Trả điều khiển sau một thao tác đứng yên (châm nhang…), nếu không có gì khác đang giữ người chơi lại. */
+  resumeControl(): void {
+    if (this.state === "playing" && !this.hud.busy && this.knocker.state !== "caught") this.player.enable();
   }
 
   openPhoto(variant: number, caption: string): void {

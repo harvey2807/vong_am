@@ -35,6 +35,10 @@ const STEP_LENGTH = 0.75;
 const DEG = Math.PI / 180;
 
 const rand = ([a, b]: number[]) => a + Math.random() * (b - a);
+/** Thói quen: đi sát một điểm từ chừng này lần trở lên thì nó có thể ra đó đứng chờ, với xác suất này, chừng này giây. */
+const HABIT_VISITS = 3;
+const HABIT_CHANCE = 0.45;
+const HABIT_WAIT = [6, 9];
 const flat = (v: Vector3) => new Vector3(v.x, 0, v.z);
 
 /**
@@ -68,6 +72,13 @@ export class Knocker {
   private stepDistance = 0;
   private searchYaw = 0;
   private lastPatrolNode?: string;
+  /**
+   * Thói quen của người chơi trong lúc bị săn: đã đi sát điểm dẫn đường nào bao nhiêu lần. Cứ đi một lối thì nó học được,
+   * ra đúng chỗ đó đứng chờ (`ambush`) — không thể thắng đêm nào bằng cách chạy vòng một đường.
+   */
+  private readonly habits = new Map<string, number>();
+  private habitNode?: string;
+  private ambush = false;
   /** Nó đã thấy người chơi chui vào chỗ trốn → sẽ lôi ra. */
   private sawHide = false;
   private spot?: HidingSpot;
@@ -268,6 +279,7 @@ export class Knocker {
     if (this.state === "inactive") return;
     this.time += dt;
     this.animateSprite(dt);
+    this.trackHabit();
 
     switch (this.state) {
       case "idle":
@@ -284,7 +296,9 @@ export class Knocker {
           this.lookAround(dt);
           if (this.timer <= 0) this.nextPatrolPoint();
         } else if (this.follow(dt, tuning.speed.patrol * diff().knockerSpeed)) {
-          this.timer = rand(tuning.patrolPause);
+          // Ra chỗ người chơi hay đi ngang thì đứng chờ lâu hơn hẳn.
+          this.timer = this.ambush ? rand(HABIT_WAIT) : rand(tuning.patrolPause);
+          this.ambush = false;
           this.searchYaw = this.root.rotation.y;
         }
         break;
@@ -445,6 +459,16 @@ export class Knocker {
       return;
     }
     const nav = this.game.house.nav;
+    // Người chơi cứ đi một lối: thỉnh thoảng nó ra đúng chỗ đó đứng chờ. Đã chờ một lần thì "quên" bớt.
+    const habit = [...this.habits].filter(([id, n]) => n >= HABIT_VISITS && id !== this.lastPatrolNode).sort((a, b) => b[1] - a[1])[0];
+    const habitNode = habit && nav.nodes.get(habit[0]);
+    if (habitNode && Math.random() < HABIT_CHANCE) {
+      this.habits.set(habitNode.id, habit[1] - 2);
+      this.lastPatrolNode = habitNode.id;
+      this.ambush = true;
+      this.routeTo(habitNode.pos, 0);
+      return;
+    }
     const candidates = [...nav.nodes.values()].filter(
       (n) => n.patrol && n.id !== this.lastPatrolNode && Vector3.Distance(n.pos, flat(this.root.position)) > 1.5,
     );
@@ -458,6 +482,16 @@ export class Knocker {
     const next = pool[Math.floor(Math.random() * pool.length)];
     this.lastPatrolNode = next.id;
     this.routeTo(next.pos, 0);
+  }
+
+  /** Ghi lại điểm dẫn đường người chơi vừa đi sát qua (mỗi lần đi qua tính một). */
+  private trackHabit(): void {
+    if (this.player.hidden || this.player.floor !== 0) return;
+    const p = this.player.camera.position;
+    const n = this.game.house.nav.nearest(p);
+    if (n.id === this.habitNode || Math.hypot(n.pos.x - p.x, n.pos.z - p.z) > 1.2) return;
+    this.habitNode = n.id;
+    this.habits.set(n.id, (this.habits.get(n.id) ?? 0) + 1);
   }
 
   /** Bị bắt: mặt nó áp sát camera (jumpscare), rồi để Director chạy đoạn kết. */

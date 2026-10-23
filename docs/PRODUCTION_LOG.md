@@ -73,3 +73,18 @@ Short, append-only notes so work can resume after an interruption. Newest last.
   Verified: typecheck, `npm run smoke` 16/16 (now includes chapter 3.5), plus a scripted playthrough of the new
   content (flashback start→ending, coffin knock/hunt, hide ×3 + nailed lid, thọ mộc, child coffin, Trả hồn ending):
   27/27, 0 console errors; screenshots reviewed (headless SwiftShader — real-GPU look still unchecked).
+
+- **Script v2 (docs/SCRIPT_V2.md) approved — name stays VỌNG ÂM; Night 1 v2 vertical slice done:**
+  new `src/world/Clues.ts` (đầu thất meal tray on the sập — 5th bowl of cháo trắng appears while unobserved; child's
+  feet by the altar; medicine box "bé Út"; July calendar pages behind grandma's door), `src/core/fragments.ts`
+  (4 torn diary pieces, persisted like relics, assembled as "Trang sổ bị xé" in the journal; #1 in the diary;
+  `Game.findFragment`), rules note page 3 (Út's own handwriting) + `Hud.onPage` → `read_rules_back`, tin photo note,
+  knock variants by where the player stands (bedroom/living/front door/kitchen), fake "Bà" text after the third knock,
+  incense = 3 sticks × 1.6 s standing still (`House.tickIncense`, `Game.resumeControl`), end-of-night text "Con thắp
+  nhang cho ai vậy?", Knocker habit memory (route used ≥3× → 45% chance it waits there 6–9 s).
+  Flashback: no "human eyes" reveal; second POV under the altar (`pastUnder`, `pastSandalTaken`), "Dạ.".
+  Alley: `src/world/streetAds.ts` — dog-thief sign, T1/MU graffiti, drain-cleaning stickers (0444.444.444), room/card
+  ads; readable ones have lines. Smoke rebinding check now waits for the prompt (was timing-flaky under SwiftShader).
+  Verified: typecheck; smoke 16/16 ×3; lore playtest 27/27; Night-1-v2 playtest 26/26; screenshots reviewed.
+- **Next (SCRIPT_V2 §8 step 2):** choice dialog (bà Bảy), persistent choice marks, alley loop after looking up at
+  no. 9, Night 2 v2 (riddle note, three memories, fake/real footsteps, chipped bowl, fragment #2 in the well bucket).

@@ -110,7 +110,9 @@ Di vật được lưu qua mọi lần chơi (kể cả khi bấm "Trò chơi m�
 Giấc mơ sau Đêm 3, chơi bằng mắt Út sáu tuổi (mắt thấp, bước chân chỉ có tiếng giấy sột soạt). Nhà năm 2003: chưa
 có đám tang, tiệm còn mở. Ông ngồi bào cỗ hòm nhỏ "cho con búp bê"; con thế thân cao bằng Út, trùm khăn đỏ. Giờ Tý,
 ba tiếng gõ; ông bảo Út trốn. Gầm bàn thờ đã có một đứa nằm sẵn, quay lưng lại. Quỷ sai: *"…Có. Hai đứa."* Gần
-sáng bà ẵm "mình" ra: *"Sao con nhẹ hều vậy Út."* Đứa dưới gầm bàn thờ mở mắt: mắt người, không có hai chấm mực.
+sáng có **hai góc nhìn**: được bế lên (*"Sao con nhẹ hều vậy Út."*), rồi lại nằm dưới gầm bàn thờ, nhìn một bàn tay
+nhặt đi một trong hai chiếc dép; bà nói *"Từ nay trong nhà chỉ có một đứa thôi."*, ngay sát bên có tiếng *"Dạ."*.
+Hồn và vía đều nhớ đêm đó; chương này không cho biết người chơi là đứa nào (đáp án ở phép thử kim).
 
 ## Mô-típ văn hóa dùng trong game
 

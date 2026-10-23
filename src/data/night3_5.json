@@ -34,13 +34,17 @@
   {
     "id": "to_living",
     "when": { "all": ["met_ong"], "near": "altar", "nearRadius": 3.4 },
-    "actions": [{ "type": "setFlag", "flag": "go_midnight" }]
+    "actions": [
+      { "type": "setFlag", "flag": "go_midnight" }
+    ]
   },
   {
     "id": "to_living_late",
     "comment": "Không vào phòng khách thì nửa đêm vẫn tới.",
     "when": { "all": ["met_ong"], "delay": 50 },
-    "actions": [{ "type": "setFlag", "flag": "go_midnight" }]
+    "actions": [
+      { "type": "setFlag", "flag": "go_midnight" }
+    ]
   },
   {
     "id": "midnight",
@@ -87,7 +91,7 @@
   },
   {
     "id": "under",
-    "comment": "Dưới gầm bàn thờ đã có một đứa nằm sẵn. Gần sáng bà ẵm \"mình\" ra — và mình nhẹ hều.",
+    "comment": "Dưới gầm bàn thờ đã có một đứa nằm sẵn. Gần sáng: góc nhìn được bế lên (\"nhẹ hều\"), rồi góc nhìn nằm lại. Không cho biết mình là đứa nào.",
     "when": { "all": ["under_altar"] },
     "actions": [
       { "type": "objective", "text": "" },
@@ -133,14 +137,23 @@
       { "type": "sound", "sound": "whisper", "at": "behindPlayer" },
       { "type": "subtitle", "text": "“Sao con nhẹ hều vậy Út.”", "duration": 4, "voice": true },
       { "type": "wait", "seconds": 5 },
-      { "type": "beat", "name": "pastEyes" },
-      { "type": "sound", "sound": "rustle" },
-      { "type": "subtitle", "text": "Đứa còn lại vẫn nằm dưới gầm bàn thờ. Nó mở mắt.", "duration": 4 },
+      { "type": "lights", "state": "blackout" },
+      { "type": "wait", "seconds": 1.6 },
+      { "type": "beat", "name": "pastUnder" },
+      { "type": "lights", "state": "on" },
+      { "type": "subtitle", "text": "…Lại là gầm bàn thờ. Đứa nằm cạnh mình không còn ở đây nữa.", "duration": 4 },
       { "type": "wait", "seconds": 4.5 },
-      { "type": "subtitle", "text": "Mắt người. Không có hai chấm mực.", "duration": 3.5 },
+      { "type": "beat", "name": "pastSandalTaken" },
+      { "type": "subtitle", "text": "Một bàn tay thò xuống, nhặt đi một chiếc dép.", "duration": 3.5 },
       { "type": "wait", "seconds": 4.5 },
+      { "type": "sound", "sound": "whisper", "at": "altar" },
+      { "type": "subtitle", "text": "“Từ nay trong nhà chỉ có một đứa thôi.”", "duration": 4, "voice": true },
+      { "type": "wait", "seconds": 7 },
+      { "type": "sound", "sound": "whisper", "at": "behindPlayer" },
+      { "type": "subtitle", "text": "“Dạ.”", "duration": 2.5, "voice": true },
+      { "type": "wait", "seconds": 3.5 },
       { "type": "setFlag", "flag": "ending" },
-      { "type": "ending", "title": "Rằm năm Quý Mùi", "text": "Sáng hôm sau, người ta thấy ông ngồi ngoài hiên, mắt còn mở.\nBà ẵm tôi vô buồng, ru tôi ngủ. Suốt buổi sáng, bà không nhìn về phía gầm bàn thờ lần nào.\n\nTôi tỉnh dậy cạnh đống tro ngoài vườn. Trời đã sáng.", "next": 4 }
+      { "type": "ending", "title": "Rằm năm Quý Mùi", "text": "Sáng hôm sau, người ta thấy ông ngồi ngoài hiên, mắt còn mở.\nTôi không nhớ mình là đứa được bế ra, hay đứa nằm lại.\n\nTôi tỉnh dậy cạnh đống tro ngoài vườn. Trời đã sáng. Trong tay tôi là một chiếc dép con nít, ướt sũng.", "next": 4 }
     ]
   }
 ]
