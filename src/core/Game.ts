@@ -20,6 +20,7 @@ import type { DirectorContext, EntityCommand, LightState, SoundId, TvState } fro
 import { Knocker } from "../entity/Knocker";
 import { Stalker } from "../entity/Stalker";
 import { Effigies } from "../entity/Effigy";
+import { allRelicsFound } from "./relics";
 import { Scarecrows } from "../entity/Scarecrow";
 import { ALTAR_EFFIGIES } from "../world/Funeral";
 import { InteractionSystem } from "../interaction/Interaction";
@@ -210,6 +211,8 @@ export class Game implements DirectorContext {
     this.player.camera.position.set(s.x, 1.6, s.z);
     this.player.camera.rotation.set(0, (s.yaw * Math.PI) / 180, 0);
     for (const f of lv.flags) this.director.set(f);
+    // Đã gom đủ di vật từ những lần chơi trước: Đêm cuối mở Kết thật.
+    if (allRelicsFound()) this.director.set("all_relics");
     this.house.setPhoto(lv.photo);
     if (lv.rain) this.fx.startRain(new Vector3(6.2, 0, -9), new Vector3(13.2, 0, 3.1));
     document.title = `VONG ÂM — ${lv.title}`;

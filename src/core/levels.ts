@@ -36,6 +36,7 @@ export const LEVELS: Record<number, Level> = {
     intro: [
       "Tôi nhận tin bà mất khi đang ở Sài Gòn. Bảy ngày sau mới về được tới làng.",
       "Xe thả tôi ở đầu ngõ lúc gần nửa đêm. Trời mưa không ngớt.",
+      "Nhà bà ở cuối Ngõ 4. Gian trước từng là tiệm trát giấy Phúc Ký của ông — hai mươi năm nay không mở cửa.",
       "Chú Tư nhắn: \"Chìa khóa để dưới chậu bông trước cửa. Đi thẳng vô nhà, đừng la cà.\"",
     ],
     events: night0 as unknown as HorrorEvent[],
@@ -48,8 +49,8 @@ export const LEVELS: Record<number, Level> = {
     id: 1,
     title: "Đêm thứ nhất",
     intro: [
-      "Trong nhà vẫn mùi nhang và mùi ẩm như hồi nhỏ.",
-      "Người trong xóm nói bà đi lúc nửa đêm, cửa nhà vẫn cài then bên trong.",
+      "Đêm nay là đầu thất của bà. Người xưa nói đêm đầu thất, người chết về nhà.",
+      "Người ta vớt bà lên từ cái giếng sau vườn — trong khi cửa nhà vẫn cài then bên trong.",
       "Chú Tư nhắn thêm đúng một câu: \"Đêm nay đừng mở cửa cho ai.\"",
     ],
     subtitle: "Tiếng gõ cửa",
@@ -97,6 +98,7 @@ export const LEVELS: Record<number, Level> = {
     intro: [
       "Sáng ra tôi tỉnh dậy trên giường bà, ống quần còn dính bùn ruộng.",
       "Gần trưa, thầy Sáu ghé qua, đứng ngoài cổng rất lâu mà không bước vào.",
+      "Ông thầy chỉ nói một câu: \"Đồ mã nhà này do bà tự làm. Bà làm khéo quá.\"",
       "Tối đó, mấy hình nhân giấy của đám tang bà không còn đứng ở chỗ cũ.",
     ],
     subtitle: "Hình nhân",

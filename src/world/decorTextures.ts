@@ -6,7 +6,7 @@ import { speckle, type Ctx } from "./textures";
 
 const cache = new Map<string, string>();
 
-function paintedRect(key: string, w: number, h: number, draw: (ctx: Ctx, w: number, h: number) => void): string {
+export function paintedRect(key: string, w: number, h: number, draw: (ctx: Ctx, w: number, h: number) => void): string {
   const hit = cache.get(key);
   if (hit) return hit;
   const c = document.createElement("canvas");
@@ -19,7 +19,7 @@ function paintedRect(key: string, w: number, h: number, draw: (ctx: Ctx, w: numb
 }
 
 /** Một "chữ" thư pháp: vài nét ngang, sổ, chấm, phẩy trong ô vuông. */
-function glyph(ctx: Ctx, x: number, y: number, size: number, color: string): void {
+export function glyph(ctx: Ctx, x: number, y: number, size: number, color: string): void {
   ctx.save();
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
@@ -331,39 +331,6 @@ export function ashUrl(): string {
       ctx.arc(w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r, 2 + Math.random() * 5, 0, Math.PI * 2);
       ctx.fill();
     }
-  });
-}
-
-/** Áo giấy của hình nhân: giấy màu hồ dán, viền kim tuyến, hoa văn vẽ tay. */
-export function effigyRobeUrl(color: string): string {
-  return paintedRect(`robe:${color}`, 128, 128, (ctx, w, h) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, w, h);
-    // nếp giấy dán
-    for (let x = 0; x < w; x += 16) {
-      ctx.fillStyle = "rgba(0,0,0,0.12)";
-      ctx.fillRect(x, 0, 2, h);
-    }
-    ctx.fillStyle = "#d9b44a";
-    ctx.fillRect(0, h * 0.08, w, 5);
-    ctx.fillRect(0, h * 0.86, w, 7);
-    ctx.strokeStyle = "rgba(240,220,150,0.7)";
-    ctx.lineWidth = 1.5;
-    for (let i = 0; i < 6; i++) {
-      const cx = (i + 0.5) * (w / 6);
-      ctx.beginPath();
-      ctx.arc(cx, h * 0.5, 6, 0, Math.PI * 2);
-      ctx.moveTo(cx - 9, h * 0.62);
-      ctx.quadraticCurveTo(cx, h * 0.55, cx + 9, h * 0.62);
-      ctx.stroke();
-    }
-    speckle(ctx, w, h, 200, "rgba(0,0,0,0.12)", 2);
-    // ẩm mốc loang từ gấu áo
-    const g = ctx.createLinearGradient(0, h * 0.6, 0, h);
-    g.addColorStop(0, "rgba(30,25,10,0)");
-    g.addColorStop(1, "rgba(30,25,10,0.5)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, w, h);
   });
 }
 

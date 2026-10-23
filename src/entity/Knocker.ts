@@ -72,6 +72,7 @@ export class Knocker {
   private twitchIn = 2;
   /** Lúc đuổi, hình ảnh chỉ cập nhật vị trí theo từng nhịp — giật cục như phim tua thiếu khung. */
   private stutter = 0;
+  private snap?: Vector3;
 
   constructor(
     private readonly scene: Scene,
@@ -428,14 +429,16 @@ export class Knocker {
     const pivot = this.sprite.pivot;
     if (this.state === "chase") {
       this.stutter -= dt;
-      if (this.stutter <= 0) {
+      if (this.stutter <= 0 || !this.snap) {
         this.stutter = 0.11;
-        pivot.position.setAll(0);
-      } else {
-        // Giữ nguyên chỗ cũ trên thế giới trong lúc gốc đã đi tiếp.
-        pivot.position.addInPlace(Vector3.TransformNormal(this.lastStep, this.root.getWorldMatrix().clone().invert()).scale(-1));
+        this.snap = this.root.position.clone();
       }
-    } else pivot.position.setAll(0);
+      // Giữ nguyên chỗ cũ trên thế giới trong lúc gốc đã đi tiếp.
+      pivot.setAbsolutePosition(this.snap);
+    } else {
+      this.snap = undefined;
+      pivot.position.setAll(0);
+    }
   }
 
   /** Bật khối hình học (giả làm Út) hoặc hình con ma. Thân vẫn bật để Director còn kiểm tra "nhìn thấy". */
@@ -455,6 +458,7 @@ export class Knocker {
       drawEntityFace(this.faceTex.getContext() as unknown as CanvasRenderingContext2D, 64, 96);
       this.faceTex.update();
       this.showModel(false);
+      this.disguised = false;
     }
     this.state = "caught";
     this.timer = 0;
@@ -463,6 +467,9 @@ export class Knocker {
     cam.rotation.x = 0;
     const fwd = flat(cam.getDirection(Vector3.Forward())).normalize();
     this.root.position = cam.position.add(fwd.scale(0.9));
+    this.sprite.mesh.rotation.setAll(0);
+    this.sprite.mesh.position.setAll(0);
+    this.sprite.pivot.position.setAll(0);
     this.root.position.y = cam.position.y - (this.disguised ? EYE_HEIGHT : this.sprite.faceHeight);
     this.sprite.mat.emissiveColor = new Color3(0.55, 0.53, 0.5);
     this.root.rotation.y = Math.atan2(-fwd.x, -fwd.z);

@@ -18,6 +18,8 @@ export interface SpriteDef {
 
 export const SPRITES = {
   ghost: { url: "textures/sprites/ghost.png", w: 238, h: 666, face: [0.708, 0.177, 0.2, 0.085] },
+  effigyBoy: { url: "textures/sprites/effigy_boy.png", w: 166, h: 271, face: [0.29, 0.095, 0.22, 0.15] },
+  effigyGirl: { url: "textures/sprites/effigy_girl.png", w: 133, h: 244, face: [0.62, 0.14, 0.28, 0.18] },
 } satisfies Record<string, SpriteDef>;
 
 const images = new Map<string, Promise<HTMLImageElement>>();

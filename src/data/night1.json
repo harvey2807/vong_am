@@ -6,8 +6,8 @@
       { "type": "wait", "seconds": 1.5 },
       { "type": "subtitle", "text": "Ba năm rồi mới về lại nhà bà.", "duration": 4 },
       { "type": "wait", "seconds": 4.5 },
-      { "type": "subtitle", "text": "Bà mất đã bảy ngày. Không ai chịu nói rõ bà mất thế nào.", "duration": 5 },
-      { "type": "wait", "seconds": 5.5 },
+      { "type": "subtitle", "text": "Bà mất đã bảy ngày. Đêm nay là đầu thất — người ta dặn nhà có người chết thì đêm nay phải ngủ sớm, tắt đèn, đừng để người về thấy mình.", "duration": 7 },
+      { "type": "wait", "seconds": 7.5 },
       { "type": "subtitle", "text": "Chú Tư bảo bà có để lại gì đó trên bàn thờ.", "duration": 5 },
       { "type": "objective", "text": "Xem bà để lại gì trên bàn thờ (phòng khách)" }
     ]

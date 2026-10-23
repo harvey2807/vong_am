@@ -37,22 +37,33 @@ chết thì "Thử lại đêm này". Tiến trình lưu trong trình duyệt. P
   `[[...]]` = dòng mực đỏ tự viết thêm sau ~3 giây đọc (kèm tiếng thì thầm sát tai). Cài đặt "Chữ trên giấy: Chữ in" để dễ đọc.
 - **Action kịch bản mới**: `door` (đóng/mở cửa — đóng sầm kêu to, HUD chớp), `objective` có `glitch` (dòng nhiệm vụ bị chiếm).
 
-## Nhân vật & bàn thờ dạng ảnh (sprite)
+## Nhân vật, hình nhân, bàn thờ
 
-Con ma (Người Gõ Cửa), hai hình nhân giấy và các chân dung trên bàn thờ được cắt từ ảnh concept trong
-`reference/concept/` → `public/textures/sprites/` (tách nền bằng `rembg` model u2netp, làm cứng alpha, cắt sát).
-Vì là ảnh do người dùng cung cấp, **hãy chắc chắn bạn có quyền dùng chúng** trước khi phát hành.
+- **Người Gõ Cửa** (`src/entity/Knocker.ts` + `src/world/sprites.ts`): ảnh "bà" mặc bộ bà ba hoa, tóc ướt, cắt từ
+  `reference/concept/hanh-lang-thuc-the.png` (tách nền bằng `rembg` u2netp), đặt trên billboard trục Y, chân mờ vào khói
+  ("ma không chân"). Nó lơ lửng nhẹ, thỉnh thoảng giật đầu; lúc đuổi thì chúi người về trước và di chuyển giật cục
+  (cập nhật vị trí hình theo nhịp ~0,11 s). Cú hù áp đúng khuôn mặt ảnh vào giữa màn hình. Khi giả làm Út (Đêm cuối),
+  nó dùng mô hình hình học, lúc bắt người thì lớp đó rơi ra.
+- **Hình nhân giấy** (`buildPaperDoll` trong `src/entity/Effigy.ts`, texture ở `src/world/paperTextures.ts`): mô hình 3D
+  kiểu trát giấy Hoa, có Kim Đồng, Ngọc Nữ và hình nhân thế mạng trắng. Thân áo tiện tròn (lathe) có mây lành và viền chữ
+  hồi; tay áo rộng, bàn tay giấy, quần, giày vải đế trắng, đế nan tre; phướn dẫn hồn hoặc lồng đèn đỏ.
+  Mặt có 4 trạng thái: `undotted` (mắt trắng không con ngươi, đúng phép), `dotted` (đã bị điểm mắt, khi thức dậy),
+  `grab` (con ngươi loang, mực đỏ chảy, miệng rách) và `blank` (thế mạng chưa dán mặt). Lúc lại gần, đầu chúng nghẹo dần.
+- **Bàn thờ**: di ảnh bà, ông, chú vẽ từ chân dung thật (`portrait_*.png`). Ảnh gia đình ghép mặt thật, viền nhòe;
+  người thứ năm có hốc mắt rỗng.
 
-- `src/world/sprites.ts`: `Sprite` = mặt phẳng billboard trục Y (luôn quay về người chơi), tâm xoay đặt đúng khuôn mặt;
-  `setFace("normal" | "blank" | "rage" | "grab")` vẽ đè lên ảnh gốc: mặt bị xóa trắng như giấy, hốc mắt đen chảy, miệng há.
-- Người Gõ Cửa: hình ma tóc xõa cao 2,05 m; khối hình học cũ chỉ hiện khi nó giả làm Út (Đêm cuối) và rơi ra lúc bắt.
-  Jumpscare áp đúng khuôn mặt ảnh vào giữa màn hình.
-- Hình nhân (bàn thờ + Đêm 3/4): bé trai/bé gái giấy cỡ người thật; thức dậy → mặt trắng trơn; vồ → hốc mắt đen.
-  Hình nhân thế mạng ngoài giàn hỏa (Yard) vẫn là mô hình vì cần mặc áo, dán ảnh.
-- Bàn thờ: di ảnh bà (giữa, trên khám), ông và chú (hai bên) vẽ từ chân dung thật — ngả nâu, ố mép, lấm tấm;
-  Đêm 3+ di ảnh bà bị cạo mặt, cào xước. Ảnh gia đình (`drawPhoto`) ghép mặt thật, viền nhòe như ảnh cũ;
-  người thứ năm mờ nhòe với hốc mắt rỗng, biến thể 7 thì mọi khuôn mặt bị xóa.
-- Ảnh tải không đồng bộ (`portraitsReady`); nơi nào vẽ lúc khởi động sẽ tự vẽ lại khi ảnh tới.
+Các ảnh trong `public/textures/sprites/` cắt từ concept do chủ dự án cung cấp, **cần xác nhận quyền sử dụng** trước khi
+phát hành.
+
+## Cốt truyện & Di vật
+
+Toàn bộ cốt truyện (bề mặt và bên dưới, các kết thúc, mô-típ văn hóa) nằm trong [docs/STORY.md](docs/STORY.md).
+
+- Mỗi màn giấu một **di vật** (`src/data/relics.json`, `src/core/relics.ts`). Đó là một mảnh giấy ố có dấu son, nhặt lên
+  đọc được. Di vật lưu ở `localStorage["vongam.relics"]`, được giữ lại qua "Trò chơi mới" và đọc lại được trong mục
+  **Di vật** ở màn hình chính (mục chưa tìm thì hiện lời gợi ý chỗ giấu).
+- Gom đủ 6 di vật thì Director có cờ `all_relics`, và Đêm cuối chạy **Kết thật "Thế thân"** (`ending_true` trong
+  `night4.json`) thay cho kết thường.
 
 ## Giao diện (UI)
 

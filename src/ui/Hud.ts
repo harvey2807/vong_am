@@ -1,4 +1,5 @@
 import { drawPhoto } from "../world/textures";
+import { foundRelics, RELICS } from "../core/relics";
 import { SETTING_SPECS, type Settings, type SettingsValues } from "../core/Settings";
 import type { PlaytestAnswers } from "../core/Playtest";
 import { MenuBackground, type MenuSceneEvent } from "./MenuBackground";
@@ -32,7 +33,7 @@ export interface EndingAction {
 const LINE_DELAY = 1.6;
 /** Việc cần làm sáng rõ lúc mới đổi, sau chừng này mili-giây thì mờ đi để nhường chỗ cho cảnh. */
 const OBJECTIVE_FADE_AFTER = 7000;
-const MODALS = ["panel-settings", "panel-credits", "panel-memories"];
+const MODALS = ["panel-settings", "panel-credits", "panel-memories", "panel-relics"];
 /** Thứ tự từ trên xuống: màn nào đang hiện và nằm trên cùng thì nhận phím mũi tên. */
 const SCREENS = [...MODALS, "pause", "start", "chapter", "ending"];
 
@@ -211,9 +212,39 @@ export class Hud {
         mem.appendChild(b);
       }
     }
+    const found = foundRelics();
+    if (found.size) {
+      item("Di vật", `${found.size}/${RELICS.length} mảnh giấy cũ của nhà họ Lâm`, () => this.openModal("panel-relics"));
+      this.fillRelics(found);
+    }
     item("Cài đặt", "Độ sáng, âm lượng, chuột, phụ đề, đồ họa", () => this.openModal("panel-settings"));
     item("Ghi công", "", () => this.openModal("panel-credits"));
     list.querySelector<HTMLElement>(".menu-item")?.focus({ preventScroll: true });
+  }
+
+  /** Danh sách di vật: đã tìm thì đọc lại được, chưa tìm thì chỉ có lời gợi ý chỗ giấu. */
+  private fillRelics(found: Set<string>): void {
+    const list = $("relic-list");
+    list.replaceChildren();
+    for (const r of RELICS) {
+      const d = document.createElement("details");
+      d.className = "relic";
+      const sum = document.createElement("summary");
+      if (found.has(r.id)) {
+        sum.textContent = r.title;
+        const body = document.createElement("div");
+        body.className = "relic-text";
+        body.textContent = r.pages.join("\n\n").replace(/\[\[|\]\]/g, "");
+        d.append(sum, body);
+      } else {
+        sum.textContent = "? ? ?";
+        const body = document.createElement("div");
+        body.className = "relic-text relic-hint";
+        body.textContent = r.hint;
+        d.append(sum, body);
+      }
+      list.appendChild(d);
+    }
   }
 
   /** Màn chuyển chương: số đêm, tên đêm, từng dòng kể hiện dần, rồi mới cho bước vào. */

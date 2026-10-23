@@ -1,11 +1,9 @@
 import { Color3, Mesh, MeshBuilder, Ray, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
 import type { Game } from "../core/Game";
-import { effigyFaceUrl, effigyRobeUrl } from "../world/decorTextures";
+import { bannerUrl, dollFaceUrl, hairUrl, lanternUrl, PALETTES, plainPaperUrl, robeUrl, shoeUrl, type DollFace, type DollKind } from "../world/paperTextures";
 import type { Waypoint } from "./NavGraph";
 import { diff } from "../core/difficulty";
-import { Sprite, SPRITES } from "../world/sprites";
 
-const HEAD_HEIGHT = 1.38;
 /** Đèn sáng thì nhích chậm; đèn chập chờn hay tắt thì lao nhanh. Người chơi đi bộ 1.8, chạy 3.3. */
 const SPEED_LIT = 1.2;
 const SPEED_DARK = 2.3;
@@ -20,74 +18,170 @@ const RUSTLE_EVERY = 0.55;
 
 const flat = (v: Vector3) => new Vector3(v.x, 0, v.z);
 
+/** Một hình nhân giấy đã dựng: thân (để kiểm tra "đang bị nhìn"), đầu (nghiêng được), đổi mặt và áo. */
+export interface PaperDoll {
+  root: TransformNode;
+  body: Mesh;
+  head: TransformNode;
+  robe: StandardMaterial;
+  /** Độ cao tâm mặt tính từ chân (m) — jumpscare đặt mặt đúng tầm mắt. */
+  faceHeight: number;
+  setFace(mode: DollFace): void;
+}
+
+/** Xoay khối cầu đầu để mặt vẽ ở u = 0.75 của ảnh nhìn về +z. */
+const FACE_YAW = 0;
+
 /**
- * Hình nhân giấy — đồ mã thế mạng trong đám tang. Thân phễu dán giấy màu, tay áo phẳng,
- * mặt vẽ phấn trắng má đỏ. Gốc tọa độ ở chân, mặt nhìn về +z.
+ * Hình nhân giấy kiểu Hoa (纸扎): Kim Đồng (boy) áo xanh mũ quả dưa cầm phướn dẫn hồn, Ngọc Nữ (girl) áo hồng
+ * búi hai bên cầm lồng đèn, hoặc hình nhân thế mạng (standIn) giấy trắng trơn. Thân áo tiện tròn bằng lathe,
+ * tay áo rộng buông thõng, bàn tay giấy, quần, giày vải đế trắng, đứng trên đế nan tre. Gốc ở chân, mặt nhìn +z.
  */
-export function buildEffigy(scene: Scene, name: string, robe: string, faceless: boolean): { root: TransformNode; body: Mesh; face: StandardMaterial } {
+export function buildPaperDoll(scene: Scene, name: string, kind: DollKind, variant = 0): PaperDoll {
+  const pal = PALETTES[kind];
   const root = new TransformNode(name, scene);
-  const paper = (n: string, color?: Color3, url?: string) => {
+  const paper = (n: string, url?: string, color?: Color3, invertY = true) => {
     const m = new StandardMaterial(`${name}-${n}`, scene);
-    m.specularColor = Color3.Black();
-    if (url) m.diffuseTexture = new Texture(url, scene, false, true, Texture.NEAREST_SAMPLINGMODE);
+    m.specularColor = new Color3(0.04, 0.04, 0.04);
+    if (url) m.diffuseTexture = new Texture(url, scene, false, invertY, Texture.TRILINEAR_SAMPLINGMODE);
     if (color) m.diffuseColor = color;
-    m.emissiveColor = new Color3(0.04, 0.035, 0.03);
+    m.emissiveColor = new Color3(0.05, 0.045, 0.04);
+    m.backFaceCulling = false;
     return m;
   };
-  const robeMat = paper("robe", undefined, effigyRobeUrl(robe));
-  const skin = paper("skin", new Color3(0.92, 0.89, 0.83));
-  const hair = paper("hair", new Color3(0.03, 0.03, 0.03));
-  const bamboo = paper("bamboo", new Color3(0.45, 0.38, 0.22));
-  const face = paper("face", undefined, effigyFaceUrl(faceless ? "blank" : "painted"));
-  face.emissiveColor = new Color3(0.18, 0.17, 0.16);
+  const robe = paper("robe", robeUrl(kind, variant));
+  const trousers = paper("trousers", plainPaperUrl(pal.trousers, "trousers"));
+  const sleeveMat = paper("sleeve", plainPaperUrl(pal.robe, "sleeve"));
+  const trim = paper("trim", plainPaperUrl(pal.trim, "trim"));
+  const skin = paper("skin", undefined, new Color3(0.94, 0.91, 0.85));
+  const hair = paper("hair", hairUrl());
+  const shoe = paper("shoe", shoeUrl());
+  const bamboo = paper("bamboo", undefined, new Color3(0.45, 0.37, 0.2));
+  // Ảnh mặt trải quanh khối cầu: không lật dọc (UV của sphere đã tính từ đỉnh xuống).
+  const face = paper("face", dollFaceUrl(kind, kind === "standIn" ? "blank" : "undotted"), undefined, false);
+  face.emissiveColor = new Color3(0.07, 0.065, 0.06);
 
-  const part = (m: Mesh, mat: StandardMaterial, parent: TransformNode = root) => {
+  const part = <T extends Mesh>(m: T, mat: StandardMaterial, parent: TransformNode = root): T => {
     m.parent = parent;
     m.material = mat;
     m.isPickable = false;
     return m;
   };
-  part(MeshBuilder.CreateBox(`${name}Base`, { width: 0.42, height: 0.04, depth: 0.42 }, scene), bamboo).position.y = 0.02;
-  const body = part(MeshBuilder.CreateCylinder(`${name}Body`, { height: 1.12, diameterTop: 0.3, diameterBottom: 0.56, tessellation: 10 }, scene), robeMat);
-  body.position.y = 0.6;
-  for (const side of [-1, 1]) {
-    const sleeve = part(MeshBuilder.CreateBox(`${name}Sleeve`, { width: 0.06, height: 0.58, depth: 0.16 }, scene), robeMat);
-    sleeve.position.set(side * 0.22, 0.9, 0.02);
-    sleeve.rotation.z = side * 0.18;
-    part(MeshBuilder.CreateBox(`${name}Hand`, { width: 0.05, height: 0.1, depth: 0.08 }, scene), skin).position.set(side * 0.27, 0.58, 0.04);
+  const v = (x: number, y: number) => new Vector3(x, y, 0);
+
+  // Đế nan tre.
+  part(MeshBuilder.CreateBox(`${name}Base`, { width: 0.42, height: 0.03, depth: 0.32 }, scene), bamboo).position.y = 0.015;
+  // Giày + chân (quần).
+  for (const sx of [-1, 1]) {
+    const sh = part(MeshBuilder.CreateSphere(`${name}Shoe`, { diameter: 1, segments: 8 }, scene), shoe);
+    sh.scaling.set(0.085, 0.07, 0.17);
+    sh.position.set(sx * 0.075, 0.06, 0.025);
+    const leg = part(MeshBuilder.CreateCylinder(`${name}Leg`, { height: 0.44, diameterTop: 0.12, diameterBottom: 0.095, tessellation: 10 }, scene), trousers);
+    leg.position.set(sx * 0.075, 0.3, 0);
   }
-  part(MeshBuilder.CreateCylinder(`${name}Neck`, { height: 0.12, diameter: 0.08, tessellation: 6 }, scene), skin).position.y = 1.2;
+  // Thân áo: tiện tròn từ cổ xuống gấu, ép dẹt trước-sau như giấy bồi trên khung tre.
+  // Thứ tự từ gấu lên cổ để pháp tuyến hướng ra ngoài.
+  const profile = [v(0.24, 0.435), v(0.262, 0.44), v(0.25, 0.48), v(0.215, 0.6), v(0.175, 0.74), v(0.165, 0.86), v(0.17, 1.0), v(0.165, 1.09), v(0.12, 1.135), v(0.045, 1.16)];
+  const body = part(MeshBuilder.CreateLathe(`${name}Body`, { shape: profile, tessellation: 20, closed: true }, scene), robe);
+  body.scaling.z = 0.72;
+  // Đai lưng và cổ áo viền vàng.
+  const sash = part(MeshBuilder.CreateCylinder(`${name}Sash`, { height: 0.05, diameter: 0.345, tessellation: 20 }, scene), trim);
+  sash.position.y = 0.8;
+  sash.scaling.z = 0.74;
+  const collar = part(MeshBuilder.CreateTorus(`${name}Collar`, { diameter: 0.11, thickness: 0.03, tessellation: 16 }, scene), trim);
+  collar.position.y = 1.15;
+  // Tay áo rộng buông thõng, cổ tay viền, bàn tay giấy dẹt.
+  for (const sx of [-1, 1]) {
+    const arm = new TransformNode(`${name}Arm`, scene);
+    arm.parent = root;
+    arm.position.set(sx * 0.165, 1.08, 0);
+    arm.rotation.z = sx * 0.13;
+    arm.rotation.x = -0.06;
+    const sleeve = part(MeshBuilder.CreateCylinder(`${name}Sleeve`, { height: 0.44, diameterTop: 0.1, diameterBottom: 0.17, tessellation: 12 }, scene), sleeveMat, arm);
+    sleeve.position.y = -0.22;
+    sleeve.scaling.z = 0.8;
+    const cuff = part(MeshBuilder.CreateCylinder(`${name}Cuff`, { height: 0.035, diameter: 0.175, tessellation: 12 }, scene), trim, arm);
+    cuff.position.y = -0.44;
+    cuff.scaling.z = 0.8;
+    // Bàn tay giấy cắt phẳng, lòng bàn tay quay ra trước như mọi hình nhân; ngón cái chĩa vào trong.
+    part(MeshBuilder.CreateBox(`${name}Hand`, { width: 0.065, height: 0.12, depth: 0.02 }, scene), skin, arm).position.set(0, -0.51, 0.03);
+    const thumb = part(MeshBuilder.CreateBox(`${name}Thumb`, { width: 0.022, height: 0.055, depth: 0.018 }, scene), skin, arm);
+    thumb.position.set(-sx * 0.04, -0.47, 0.03);
+    thumb.rotation.z = sx * 0.6;
+  }
+  part(MeshBuilder.CreateCylinder(`${name}Neck`, { height: 0.07, diameter: 0.06, tessellation: 8 }, scene), skin).position.y = 1.18;
+  // Đầu: khối cầu hơi dài, mặt vẽ trải quanh (xem dollFaceUrl).
   const head = new TransformNode(`${name}Head`, scene);
   head.parent = root;
-  head.position.y = HEAD_HEIGHT;
-  const skull = part(MeshBuilder.CreateSphere(`${name}Skull`, { diameter: 0.25, segments: 6 }, scene), skin, head);
-  skull.scaling.set(0.95, 1.1, 0.85);
-  const hat = part(MeshBuilder.CreateSphere(`${name}Hair`, { diameter: 0.27, segments: 6, slice: 0.5 }, scene), hair, head);
-  hat.position.y = 0.02;
-  const facePlane = part(MeshBuilder.CreatePlane(`${name}Face`, { width: 0.2, height: 0.25 }, scene), face, head);
-  facePlane.rotation.y = Math.PI;
-  facePlane.position.set(0, -0.01, 0.125);
-  return { root, body, face };
-}
+  head.position.y = 1.3;
+  const skull = part(MeshBuilder.CreateSphere(`${name}Skull`, { diameter: 0.25, segments: 16 }, scene), face, head);
+  skull.scaling.set(0.9, 1.06, 0.92);
+  skull.rotation.y = FACE_YAW;
+  if (kind === "boy") {
+    // Mũ quả dưa đen chóp đỏ.
+    const cap = part(MeshBuilder.CreateSphere(`${name}Cap`, { diameter: 0.245, segments: 12, slice: 0.5 }, scene), hair, head);
+    cap.position.y = 0.035;
+    cap.scaling.set(0.95, 0.85, 0.97);
+    const knob = part(MeshBuilder.CreateSphere(`${name}Knob`, { diameter: 0.035, segments: 6 }, scene), paper("knob", undefined, new Color3(0.7, 0.08, 0.06)), head);
+    knob.position.y = 0.145;
+    const brim = part(MeshBuilder.CreateTorus(`${name}Brim`, { diameter: 0.225, thickness: 0.018, tessellation: 18 }, scene), hair, head);
+    brim.position.y = 0.04;
+  } else if (kind === "girl") {
+    // Búi tóc hai bên, cài hoa giấy đỏ, ruy băng thả xuống.
+    const flower = paper("flower", undefined, new Color3(0.85, 0.1, 0.16));
+    for (const sx of [-1, 1]) {
+      const bun = part(MeshBuilder.CreateSphere(`${name}Bun`, { diameter: 0.09, segments: 8 }, scene), hair, head);
+      bun.position.set(sx * 0.085, 0.11, -0.01);
+      const f = part(MeshBuilder.CreateSphere(`${name}Flower`, { diameter: 0.045, segments: 6 }, scene), flower, head);
+      f.position.set(sx * 0.105, 0.09, 0.04);
+      const ribbon = part(MeshBuilder.CreatePlane(`${name}Ribbon`, { width: 0.025, height: 0.22 }, scene), flower, head);
+      ribbon.position.set(sx * 0.12, -0.02, -0.02);
+      ribbon.rotation.set(0, Math.PI, sx * 0.1);
+    }
+  }
+  // Đồ cầm tay: Kim Đồng cầm phướn dẫn hồn, Ngọc Nữ xách lồng đèn giấy đỏ.
+  if (kind === "boy") {
+    const pole = part(MeshBuilder.CreateCylinder(`${name}Pole`, { height: 1.75, diameter: 0.018, tessellation: 5 }, scene), bamboo);
+    pole.position.set(0.26, 0.9, 0.06);
+    const bar = part(MeshBuilder.CreateCylinder(`${name}Bar`, { height: 0.32, diameter: 0.014, tessellation: 5 }, scene), bamboo);
+    bar.rotation.z = Math.PI / 2;
+    bar.position.set(0.26, 1.72, 0.06);
+    const flag = paper("banner", bannerUrl());
+    flag.useAlphaFromDiffuseTexture = true;
+    (flag.diffuseTexture as Texture).hasAlpha = true;
+    for (const dx of [-0.1, 0, 0.1]) {
+      const strip = part(MeshBuilder.CreatePlane(`${name}Banner`, { width: 0.075, height: 0.7 }, scene), flag);
+      strip.position.set(0.26 + dx, 1.36 - Math.abs(dx) * 0.6, 0.065);
+      strip.rotation.y = Math.PI;
+    }
+  } else if (kind === "girl") {
+    const stick = part(MeshBuilder.CreateCylinder(`${name}Stick`, { height: 0.32, diameter: 0.012, tessellation: 5 }, scene), bamboo);
+    stick.position.set(-0.235, 0.62, 0.1);
+    stick.rotation.x = 0.5;
+    const lantern = part(MeshBuilder.CreateSphere(`${name}Lantern`, { diameter: 0.16, segments: 10 }, scene), paper("lantern", lanternUrl()));
+    lantern.scaling.y = 1.2;
+    lantern.position.set(-0.235, 0.42, 0.2);
+    (lantern.material as StandardMaterial).emissiveColor = new Color3(0.25, 0.05, 0.03);
+  }
 
-/** Cao của hình nhân giấy (m) — cỡ người thật, như đồ mã đốt cho người chết. */
-const DOLL_HEIGHT = 1.58;
-
-/**
- * Hình nhân giấy dạng ảnh (cắt từ concept art): bé trai áo xanh, bé gái áo đỏ, mặt phấn trắng má hồng.
- * `index` chẵn/lẻ chọn trai/gái. Mặt phẳng luôn quay về người chơi.
- */
-export function buildPaperDoll(scene: Scene, name: string, index: number): { root: TransformNode; sprite: Sprite } {
-  const root = new TransformNode(name, scene);
-  const sprite = new Sprite(scene, `${name}Sprite`, index % 2 ? SPRITES.effigyGirl : SPRITES.effigyBoy, DOLL_HEIGHT, root);
-  sprite.mat.emissiveColor = new Color3(0.09, 0.085, 0.08);
-  return { root, sprite };
+  return {
+    root,
+    body,
+    head,
+    robe,
+    faceHeight: 1.29,
+    setFace(mode: DollFace) {
+      const old = face.diffuseTexture;
+      face.diffuseTexture = new Texture(dollFaceUrl(kind, mode), scene, false, false, Texture.TRILINEAR_SAMPLINGMODE);
+      old?.dispose();
+    },
+  };
 }
 
 interface Doll {
   root: TransformNode;
   body: Mesh;
-  sprite: Sprite;
+  doll: PaperDoll;
   route: Waypoint[];
   repath: number;
   rustle: number;
@@ -113,17 +207,18 @@ export class Effigies {
 
   spawn(spots: [number, number, number][]): void {
     spots.forEach(([x, z, yaw], i) => {
-      const { root, sprite } = buildPaperDoll(this.scene, `effigy${i}`, i);
+      const doll = buildPaperDoll(this.scene, `effigy${i}`, i % 2 ? "boy" : "girl", i);
+      const root = doll.root;
       root.position.set(x, 0, z);
       root.rotation.y = (yaw * Math.PI) / 180;
-      this.dolls.push({ root, body: sprite.mesh, sprite, route: [], repath: Math.random() * REPATH_EVERY, rustle: 0 });
+      this.dolls.push({ root, body: doll.body, doll, route: [], repath: Math.random() * REPATH_EVERY, rustle: 0 });
     });
   }
 
-  /** Thức dậy: mặt bị xóa trắng, bắt đầu đi. */
+  /** Thức dậy: ai đó đã điểm mắt cho chúng (đại kỵ của nghề trát giấy) — bắt đầu đi. */
   wake(): void {
     this.active = true;
-    for (const d of this.dolls) d.sprite.setFace("blank");
+    for (const d of this.dolls) d.doll.setFace("dotted");
   }
 
   sleep(): void {
@@ -165,6 +260,8 @@ export class Effigies {
       if (len < 0.1) d.route.shift();
       // Luôn quay mặt về phía người chơi — lúc quay lại sẽ thấy tất cả đều đang nhìn mình.
       d.root.rotation.y = Math.atan2(cam.x - pos.x, cam.z - pos.z);
+      // Càng lại gần, đầu càng nghẹo sang một bên — như đang tò mò xem mặt mình.
+      d.doll.head.rotation.z = Math.min(0.35, Math.max(0, (AWARE_DISTANCE - dist) / AWARE_DISTANCE) * 0.4);
       d.rustle -= step;
       if (d.rustle <= 0) {
         d.rustle = RUSTLE_EVERY;
@@ -176,7 +273,7 @@ export class Effigies {
   private isSeen(d: Doll): boolean {
     const cam = this.game.player.camera;
     if (!cam.isInFrustum(d.body)) return false;
-    const head = d.root.position.add(new Vector3(0, d.sprite.faceHeight - 0.3, 0));
+    const head = d.root.position.add(new Vector3(0, d.doll.faceHeight - 0.3, 0));
     const dist = Vector3.Distance(head, cam.position);
     const lit = this.game.house.lightState === "on" || (this.game.player.flashlightOn && dist < FLASHLIGHT_SIGHT) || dist < DARK_SIGHT;
     if (!lit) return false;
@@ -200,8 +297,7 @@ export class Effigies {
     this.grabbed = d;
     this.grabTime = 0;
     this.active = false;
-    d.sprite.setFace("grab");
-    d.sprite.mat.emissiveColor = new Color3(0.5, 0.48, 0.45);
+    d.doll.setFace("grab");
     this.game.player.camera.rotation.x = 0;
     this.game.audio.play("shriek");
     this.game.onCaught();
@@ -214,8 +310,9 @@ export class Effigies {
     const cam = this.game.player.camera;
     const fwd = flat(cam.getDirection(Vector3.Forward())).normalize();
     const dist = Math.max(0.42, 0.9 - this.grabTime * 3);
-    d.root.position.set(cam.position.x + fwd.x * dist, cam.position.y - d.sprite.faceHeight, cam.position.z + fwd.z * dist);
-    d.sprite.mesh.scaling.set(1 + Math.random() * 0.05, 1 + Math.sin(this.grabTime * 35) * 0.03, 1);
+    d.root.position.set(cam.position.x + fwd.x * dist, cam.position.y - d.doll.faceHeight, cam.position.z + fwd.z * dist);
+    d.root.rotation.y = Math.atan2(-fwd.x, -fwd.z);
+    d.doll.head.rotation.z = Math.sin(this.grabTime * 35) * 0.12;
     cam.rotation.z = (Math.random() - 0.5) * 0.05;
   }
 }

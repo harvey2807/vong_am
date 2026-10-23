@@ -218,7 +218,8 @@ export class Funeral {
   }
 
   private staticEffigy(x: number, z: number, yaw: number): void {
-    const { root } = buildPaperDoll(this.scene, `altarEffigy${x}${z}`, z < 3 ? 1 : 0);
+    // Kim Đồng bên trái, Ngọc Nữ bên phải bàn thờ (nhìn từ bàn thờ ra).
+    const { root } = buildPaperDoll(this.scene, `altarEffigy${x}${z}`, z < 3 ? "girl" : "boy", z < 3 ? 0 : 1);
     root.position.set(x, 0, z);
     root.rotation.y = (yaw * Math.PI) / 180;
   }

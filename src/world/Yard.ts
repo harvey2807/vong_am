@@ -1,9 +1,10 @@
 import { Color3, DirectionalLight, Mesh, MeshBuilder, PointLight, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
-import { buildEffigy } from "../entity/Effigy";
+import { buildPaperDoll, type PaperDoll } from "../entity/Effigy";
 import type { Game } from "../core/Game";
 import { makeInteractable } from "../interaction/Interaction";
 import type { House } from "./House";
-import { bananaLeafUrl, clothUrl, effigyFaceUrl, effigyRobeUrl, roofTileUrl } from "./decorTextures";
+import { bananaLeafUrl, clothUrl, roofTileUrl } from "./decorTextures";
+import { plainPaperUrl } from "./paperTextures";
 
 const WELL = new Vector3(10, 0, -5.5);
 const CRANK_TIME = 6;
@@ -28,7 +29,7 @@ export class Yard {
   private clothes: Mesh[] = [];
   private leaves: Mesh[] = [];
   private time = 0;
-  private pyre?: { root: TransformNode; face: StandardMaterial; light: PointLight; burning: number };
+  private pyre?: { root: TransformNode; doll: PaperDoll; light: PointLight; burning: number };
 
   constructor(
     private readonly scene: Scene,
@@ -264,7 +265,8 @@ export class Yard {
 
   /** Hình nhân thế mạng thầy dựng sẵn trên giàn tre, quay mặt về phía cửa sau. */
   private buildPyre(): void {
-    const { root, body, face } = buildEffigy(this.scene, "standIn", "#d8d2c4", true);
+    const doll = buildPaperDoll(this.scene, "standIn", "standIn");
+    const { root, body } = doll;
     root.position = PYRE.clone();
     root.rotation.y = -Math.PI / 2;
     root.scaling.setAll(1.12);
@@ -280,7 +282,7 @@ export class Yard {
     light.specular = Color3.Black();
     light.range = 9;
     light.intensity = 0;
-    this.pyre = { root, face, light, burning: 0 };
+    this.pyre = { root, doll, light, burning: 0 };
     this.house.anchors.set("pyre", PYRE.add(new Vector3(0, 1, 0)));
 
     const d = () => this.director;
@@ -311,10 +313,9 @@ export class Yard {
 
   private dress(): void {
     const p = this.pyre!;
-    p.face.diffuseTexture = new Texture(effigyFaceUrl("painted"), this.scene, false, true, Texture.NEAREST_SAMPLINGMODE);
-    const body = this.scene.getMeshByName("standInBody");
-    const robe = body?.material as StandardMaterial | undefined;
-    if (robe) robe.diffuseTexture = new Texture(effigyRobeUrl("#e8e4da"), this.scene, false, true, Texture.NEAREST_SAMPLINGMODE);
+    // Mặt dán ảnh, mặc áo sơ mi cũ của Út — nhưng tuyệt đối không điểm mắt.
+    p.doll.setFace("undotted");
+    p.doll.robe.diffuseTexture = new Texture(plainPaperUrl("#ece8de", "shirt"), this.scene, false, true, Texture.TRILINEAR_SAMPLINGMODE);
     this.game.audio.play("rustle", PYRE.add(new Vector3(0, 1, 0)));
     this.director.set("effigy_dressed");
   }

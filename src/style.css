@@ -354,3 +354,12 @@ body.print-notes .paper h2 { font-size: 22px; font-weight: 600; }
   .ld-rain, .ld-smoke, .ld-incense b, .sound-hint { animation: none; }
 }
 .paper[data-paper="burnt"] .paper-page { color: #e0cfa6; opacity: 0.75; }
+
+/* ---------------------------------------------------------------- di vật */
+.relic-list { max-height: 55vh; overflow-y: auto; display: grid; gap: var(--s1); margin: var(--s3) 0; }
+.relic { border: 1px solid var(--line); background: rgba(4, 6, 6, 0.5); }
+.relic summary { cursor: pointer; padding: var(--s2) var(--s3); font-family: var(--font-title); font-size: 1.15rem; color: var(--ivory); }
+.relic summary:focus-visible { outline: 1px solid var(--crimson-2); outline-offset: -1px; }
+.relic[open] summary { color: var(--amber); }
+.relic-text { white-space: pre-line; padding: 0 var(--s3) var(--s3); font-family: var(--font-body); font-size: 0.92rem; line-height: 1.65; color: var(--ivory-2); }
+.relic-hint { font-style: italic; color: var(--ivory-3); }

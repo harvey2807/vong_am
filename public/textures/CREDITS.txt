@@ -7,5 +7,5 @@ fence_*    worn_mossy_plasterwall
 mud_*      brown_mud_leaves_01
 
 sprites/ — cắt từ ảnh concept do chủ dự án cung cấp (reference/concept/), tách nền bằng rembg (u2netp).
-  ghost.png, effigy_boy.png, effigy_girl.png, portrait_{ba,ong,me,chu}.png
+  ghost.png (từ hanh-lang-thuc-the.png), portrait_{ba,ong,me,chu}.png
   Không phải tài sản CC0 — cần xác nhận quyền sử dụng trước khi phát hành công khai.

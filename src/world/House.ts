@@ -17,6 +17,8 @@ import type { Game } from "../core/Game";
 import { makeInteractable } from "../interaction/Interaction";
 import { NavGraph } from "../entity/NavGraph";
 import notes from "../data/notes.json";
+import { allRelicsFound, foundRelics, markRelic, RELICS } from "../core/relics";
+import { relicPaperUrl } from "./paperTextures";
 import { drawEntityFace, drawPhoto, portraitsReady, tileUrl } from "./textures";
 import { Decor } from "./Decor";
 import { Funeral } from "./Funeral";
@@ -142,6 +144,7 @@ export class House {
     if (this.night === 2.5) this.fields = new Fields(scene, this, game);
     if (this.night >= 4) this.buildNightFour();
     this.yard = new Yard(scene, this, game);
+    this.placeRelics();
     this.buildNav();
     for (const m of this.materials.values()) m.maxSimultaneousLights = 8;
 
@@ -761,6 +764,46 @@ export class House {
     2: { prefix: "shard_", done: "all_shards", label: "Tìm 3 mảnh chén men lam" },
     3: { prefix: "has_", done: "all_items", label: "Tìm áo cũ, ảnh của Út và hộp diêm" },
   };
+
+  /** Chỗ giấu di vật của từng màn (x, y, z, xoay) — khuất nhưng không đi ngang được là thấy ngay. */
+  private static readonly RELIC_SPOTS: Record<string, [number, number, number, number]> = {
+    receipt: [-1.15, 0.012, -29.8, 0.4],
+    taboos: [-4.4, 0.462, 5.25, 0.2],
+    horoscope: [10.95, 0.012, -4.55, 1.1],
+    graveLetter: [11, 0.462, 126, 0.3],
+    eyeBrush: [-0.55, 0.012, -3.2, 0.7],
+    confession: [-5.7, 0.012, 2.2, -0.3],
+  };
+
+  /** Di vật của đêm này (xem core/relics.ts): một mảnh giấy cũ nằm khuất, nhặt lên đọc. */
+  private placeRelics(): void {
+    const mat = new StandardMaterial("relicPaper", this.scene);
+    mat.diffuseTexture = new Texture(relicPaperUrl(), this.scene, false, true, Texture.TRILINEAR_SAMPLINGMODE);
+    mat.specularColor = Color3.Black();
+    mat.emissiveColor = new Color3(0.1, 0.08, 0.05);
+    mat.backFaceCulling = false;
+    for (const relic of RELICS) {
+      const spot = House.RELIC_SPOTS[relic.id];
+      if (relic.level !== this.night || !spot) continue;
+      const paper = MeshBuilder.CreatePlane(`relic-${relic.id}`, { width: 0.2, height: 0.25 }, this.scene);
+      paper.position.set(spot[0], spot[1], spot[2]);
+      paper.rotation.set(Math.PI / 2, spot[3], 0);
+      paper.material = mat;
+      this.targets.set(`relic_${relic.id}`, paper);
+      makeInteractable(paper, {
+        prompt: () => (foundRelics().has(relic.id) ? "Đọc lại mảnh giấy cũ" : "Mảnh giấy cũ"),
+        interact: () => {
+          this.game.openNote(relic);
+          this.game.audio.play("rustle");
+          if (this.director.has(`relic_${relic.id}`)) return;
+          this.director.set(`relic_${relic.id}`);
+          markRelic(relic.id);
+          this.game.hud.subtitle(`Di vật ${foundRelics().size}/${RELICS.length} — ${relic.title}`, 4.5);
+          if (allRelicsFound()) this.director.set("all_relics");
+        },
+      });
+    }
+  }
 
   collect(id: string, line: string): void {
     const goal = House.GOALS[this.night];

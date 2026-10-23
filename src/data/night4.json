@@ -448,7 +448,8 @@
       ],
       "none": [
         "caught",
-        "opened_front_door"
+        "opened_front_door",
+        "all_relics"
       ]
     },
     "actions": [
@@ -510,6 +511,101 @@
         "final": true
       }
     ]
+  },
+  {
+    "id": "ending_true",
+    "when": {
+      "all": [
+        "fifth_burned",
+        "all_relics"
+      ],
+      "none": [
+        "caught",
+        "opened_front_door"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "objective",
+        "text": ""
+      },
+      {
+        "type": "effigies",
+        "do": "sleep"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "sound",
+        "sound": "shriek",
+        "at": "frontDoor"
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "subtitle",
+        "text": "Ngoài cổng có tiếng hét — giọng của chính mình — rồi tắt lịm.",
+        "duration": 4.5
+      },
+      {
+        "type": "tension",
+        "add": -1
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "lights",
+        "state": "on"
+      },
+      {
+        "type": "subtitle",
+        "text": "Đèn sáng lại. Mưa cũng tạnh.",
+        "duration": 3.5
+      },
+      {
+        "type": "wait",
+        "seconds": 4.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Trong hộp may của bà còn một cây kim. Tôi nhớ trang giấy bà xé khỏi sổ.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "sound",
+        "sound": "rustle"
+      },
+      {
+        "type": "subtitle",
+        "text": "Đầu ngón tay tôi rách ra. Không đau.",
+        "duration": 4
+      },
+      {
+        "type": "wait",
+        "seconds": 4.5
+      },
+      {
+        "type": "ending",
+        "title": "Thế thân",
+        "text": "Không có máu. Bên dưới lớp da mỏng như giấy bản là một nan tre nhỏ, chuốt rất kỹ — đúng tay nghề nhà họ Lâm.\nHai mươi năm trước, bà ẵm nhầm đứa không khóc. Đứa khóc bị nhốt trong tủ áo, chờ tới ngày được ra gõ cửa nhà mình.\n\nNgười tôi vừa đốt trong ảnh mới là Út.\n\nGần sáng, chú Tư về, ôm tôi khóc. Chú gọi tôi là Út. Bà nói đúng: bà thương hết.",
+        "final": true
+      }
+    ],
+    "comment": "Kết thật: đã gom đủ sáu di vật. Đốt xong người thứ năm, Út làm theo lời bà dặn — lấy kim đâm vào đầu ngón tay."
   },
   {
     "id": "ending_door",
