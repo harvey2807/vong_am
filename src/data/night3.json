@@ -1,0 +1,368 @@
+[
+  {
+    "id": "intro",
+    "when": {},
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Đêm thứ ba.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 3.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Chú Tư vẫn chưa về. Đèn trong nhà sáng hết, như có ai bật sẵn chờ mình.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "subtitle",
+        "text": "Mấy hình nhân giấy… hôm qua đâu có đứng ở đây.",
+        "duration": 4
+      },
+      {
+        "type": "objective",
+        "text": "Đọc tờ giấy để trên bàn thờ"
+      }
+    ]
+  },
+  {
+    "id": "awaken",
+    "comment": "Lớp 1→3: đọc giấy xong thì hình nhân mất mặt và bắt đầu đi — chỉ khi không ai nhìn.",
+    "when": {
+      "all": [
+        "read_master_note"
+      ]
+    },
+    "actions": [
+      {
+        "type": "objective",
+        "text": "Tìm áo cũ, ảnh của Út và hộp diêm (0/3)",
+        "glitch": "Quay lại nhìn đi"
+      },
+      {
+        "type": "wait",
+        "seconds": 3
+      },
+      {
+        "type": "sound",
+        "sound": "rustle",
+        "at": "hallEnd"
+      },
+      {
+        "type": "lights",
+        "state": "flicker"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.6
+      },
+      {
+        "type": "effigies",
+        "do": "wake"
+      },
+      {
+        "type": "setFlag",
+        "flag": "awake"
+      },
+      {
+        "type": "tension",
+        "add": 0.3
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "subtitle",
+        "text": "…Mặt của chúng đâu rồi?",
+        "duration": 3.5,
+        "glitch": "…Mặt của MÌNH đâu rồi?"
+      }
+    ]
+  },
+  {
+    "id": "flicker_1",
+    "comment": "Nhịp mất điện: đèn chập chờn là lúc chúng nhích tới. Bật đèn pin mà nhìn.",
+    "when": {
+      "all": [
+        "awake"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 28
+    },
+    "actions": [
+      {
+        "type": "lights",
+        "state": "flicker"
+      }
+    ]
+  },
+  {
+    "id": "blackout_1",
+    "when": {
+      "all": [
+        "awake"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 55
+    },
+    "actions": [
+      {
+        "type": "lights",
+        "state": "flicker"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.4
+      },
+      {
+        "type": "lights",
+        "state": "off"
+      },
+      {
+        "type": "subtitle",
+        "text": "Mất điện. Đèn pin — F.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 8
+      },
+      {
+        "type": "lights",
+        "state": "on"
+      }
+    ]
+  },
+  {
+    "id": "flicker_2",
+    "when": {
+      "all": [
+        "awake"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 85
+    },
+    "actions": [
+      {
+        "type": "lights",
+        "state": "flicker"
+      }
+    ]
+  },
+  {
+    "id": "blackout_2",
+    "when": {
+      "all": [
+        "awake"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 120
+    },
+    "actions": [
+      {
+        "type": "lights",
+        "state": "flicker"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.4
+      },
+      {
+        "type": "lights",
+        "state": "off"
+      },
+      {
+        "type": "wait",
+        "seconds": 11
+      },
+      {
+        "type": "lights",
+        "state": "on"
+      }
+    ]
+  },
+  {
+    "id": "blackout_final",
+    "comment": "Đủ đồ rồi thì mất điện hẳn: phải ra vườn trong bóng tối, chỉ còn đèn pin.",
+    "when": {
+      "all": [
+        "all_items"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 2
+    },
+    "actions": [
+      {
+        "type": "objective",
+        "text": "Ra vườn sau: mặc áo, dán ảnh cho hình nhân thế mạng rồi đốt"
+      },
+      {
+        "type": "subtitle",
+        "text": "Đủ rồi. Ra vườn.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 3
+      },
+      {
+        "type": "lights",
+        "state": "flicker"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.6
+      },
+      {
+        "type": "lights",
+        "state": "off"
+      },
+      {
+        "type": "tension",
+        "add": 0.3
+      }
+    ]
+  },
+  {
+    "id": "dressed",
+    "when": {
+      "all": [
+        "effigy_dressed"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "subtitle",
+        "text": "Áo của mình, mặt của mình. Nhìn nó… giống mình quá.",
+        "duration": 4
+      },
+      {
+        "type": "objective",
+        "text": "Đốt hình nhân thế mạng"
+      }
+    ]
+  },
+  {
+    "id": "ending_good",
+    "when": {
+      "all": [
+        "burned"
+      ],
+      "none": [
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "effigies",
+        "do": "sleep"
+      },
+      {
+        "type": "objective",
+        "text": ""
+      },
+      {
+        "type": "wait",
+        "seconds": 2
+      },
+      {
+        "type": "subtitle",
+        "text": "Lửa bén vào áo, vào ảnh… gương mặt trong ảnh cháy quăn lại.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "sound",
+        "sound": "rustle",
+        "at": "hallEnd"
+      },
+      {
+        "type": "subtitle",
+        "text": "Trong nhà có tiếng giấy rơi lả tả. Rồi im hẳn.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5.5
+      },
+      {
+        "type": "ending",
+        "title": "Đêm thứ ba",
+        "text": "Hình nhân cháy hết lúc gần sáng. Trên tấm ảnh thờ, chỗ người thứ năm đứng chỉ còn một vết cháy xém.\nNhưng khi trời hửng, ngoài cổng có ai đó đứng đợi — mặc cái áo sơ mi trắng cũ của bạn.",
+        "next": 4
+      }
+    ]
+  },
+  {
+    "id": "ending_caught",
+    "when": {
+      "all": [
+        "caught"
+      ],
+      "none": [
+        "ending"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.1
+      },
+      {
+        "type": "lights",
+        "state": "blackout"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "ending",
+        "title": "Bạn đã quay lưng.",
+        "text": "Sáng hôm sau, trong nhà bà có thêm một hình nhân giấy.\nMặt nó vẽ rất khéo — giống hệt bạn."
+      }
+    ]
+  }
+]

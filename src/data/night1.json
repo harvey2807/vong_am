@@ -1,0 +1,207 @@
+[
+  {
+    "id": "intro",
+    "when": {},
+    "actions": [
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "subtitle", "text": "Ba năm rồi mới về lại nhà bà.", "duration": 4 },
+      { "type": "wait", "seconds": 4.5 },
+      { "type": "subtitle", "text": "Bà mất đã bảy ngày. Không ai chịu nói rõ bà mất thế nào.", "duration": 5 },
+      { "type": "wait", "seconds": 5.5 },
+      { "type": "subtitle", "text": "Chú Tư bảo bà có để lại gì đó trên bàn thờ.", "duration": 5 },
+      { "type": "objective", "text": "Xem bà để lại gì trên bàn thờ (phòng khách)" }
+    ]
+  },
+  {
+    "id": "obj_key",
+    "when": { "all": ["read_rules"], "none": ["has_key"] },
+    "actions": [{ "type": "objective", "text": "Tìm chìa khóa phòng bà dưới bếp" }]
+  },
+  {
+    "id": "obj_bedroom",
+    "when": { "all": ["has_key"], "none": ["read_diary"] },
+    "actions": [{ "type": "objective", "text": "Vào phòng bà xem bà để lại gì" }]
+  },
+  {
+    "id": "obj_wait",
+    "when": { "all": ["read_diary"], "none": ["knocking"] },
+    "actions": [{ "type": "objective", "text": "" }]
+  },
+  {
+    "id": "obj_incense",
+    "when": { "all": ["knocking"], "none": ["ending"], "delay": 8 },
+    "actions": [{ "type": "objective", "text": "Đừng mở cửa. Thắp nhang cho bà ở bàn thờ" }]
+  },
+  {
+    "id": "photo_fifth",
+    "comment": "Lớp 1 — Bất an: ảnh đổi lặng lẽ khi người chơi không nhìn. Chỉ cần có chìa khóa (đang ở dưới bếp) — không bắt buộc đã xem ảnh, để tiến trình không bao giờ kẹt.",
+    "when": { "all": ["has_key"], "hidden": "photo" },
+    "actions": [
+      { "type": "photo", "variant": 5 },
+      { "type": "setFlag", "flag": "photo_changed" }
+    ]
+  },
+  {
+    "id": "voice_behind",
+    "comment": "Lớp 2 — Ám ảnh: giọng bà kể một ký ức không ai biết, phát ngay sau lưng.",
+    "when": { "all": ["photo_changed"], "delay": 20 },
+    "actions": [
+      { "type": "sound", "sound": "whisper", "at": "behindPlayer" },
+      { "type": "subtitle", "text": "“Út ơi… cái chén men lam bể hôm đó, bà không giận con đâu.”", "duration": 4.5, "voice": true },
+      { "type": "wait", "seconds": 5 },
+      { "type": "subtitle", "text": "…Chuyện cái chén. Mình chưa từng kể với ai.", "duration": 4.5, "glitch": "…Chuyện cái chén. Nó đã lấy rồi." },
+      { "type": "setFlag", "flag": "voice_heard" },
+      { "type": "tension", "add": 0.25 }
+    ]
+  },
+  {
+    "id": "voice_bedroom",
+    "when": { "all": ["voice_heard"], "none": ["read_diary", "ending"], "delay": 35 },
+    "actions": [
+      { "type": "sound", "sound": "whisper", "at": "bedroomInside" },
+      { "type": "subtitle", "text": "“Út… vô phòng bà đi con.”", "duration": 4, "voice": true }
+    ]
+  },
+  {
+    "id": "knock",
+    "comment": "Lớp 3 — Kinh hoàng: một lần, hai lần, ba lần. Rồi đèn tắt.",
+    "when": { "all": ["read_diary", "voice_heard"], "delay": 6 },
+    "actions": [
+      { "type": "sound", "sound": "knock", "at": "frontDoor" },
+      { "type": "wait", "seconds": 2.2 },
+      { "type": "sound", "sound": "knock", "at": "frontDoor" },
+      { "type": "wait", "seconds": 2.2 },
+      { "type": "sound", "sound": "knock", "at": "frontDoor" },
+      { "type": "setFlag", "flag": "knocking" },
+      { "type": "tension", "add": 0.35 },
+      { "type": "wait", "seconds": 0.4 },
+      { "type": "door", "door": "bedroomDoor", "open": false },
+      { "type": "wait", "seconds": 1.2 },
+      { "type": "subtitle", "text": "Ba tiếng gõ. Cửa phòng bà… tự đóng.", "duration": 3.5 },
+      { "type": "wait", "seconds": 2.5 },
+      { "type": "lights", "state": "flicker" },
+      { "type": "entity", "do": "appear", "at": "hallEnd" },
+      { "type": "wait", "seconds": 1.4 },
+      { "type": "entity", "do": "vanish" },
+      { "type": "wait", "seconds": 0.2 },
+      { "type": "lights", "state": "off" },
+      { "type": "setFlag", "flag": "lights_off" },
+      { "type": "wait", "seconds": 3 },
+      { "type": "sound", "sound": "whisper", "at": "frontDoor" },
+      { "type": "subtitle", "text": "“Út ơi, bà về rồi nè. Mở cửa cho bà.”", "duration": 4.5, "voice": true }
+    ]
+  },
+  {
+    "id": "shadow_appears",
+    "comment": "Tuần 3 — bóng người cuối hành lang. Báo trước bằng hai tiếng bước chân, rồi mới thấy hình.",
+    "when": { "all": ["lights_off"], "none": ["ending", "caught"], "delay": 7 },
+    "actions": [
+      { "type": "sound", "sound": "heavyStep", "at": "hallEnd" },
+      { "type": "wait", "seconds": 0.9 },
+      { "type": "sound", "sound": "heavyStep", "at": "hallEnd" },
+      { "type": "wait", "seconds": 1.2 },
+      { "type": "entity", "do": "appear", "at": "hallEnd" },
+      { "type": "setFlag", "flag": "shadow_appeared" },
+      { "type": "tension", "add": 0.1 },
+      { "type": "wait", "seconds": 0.6 },
+      { "type": "sound", "sound": "whisper", "at": "hallEnd" },
+      { "type": "subtitle", "text": "“Út ơi… bà vô được rồi nè.”", "duration": 4, "voice": true },
+      { "type": "wait", "seconds": 4.5 },
+      { "type": "subtitle", "text": "Cửa chính vẫn đóng.\nVậy cái gì đang đứng trong nhà?", "duration": 4.5 }
+    ]
+  },
+  {
+    "id": "shadow_hunts",
+    "comment": "Nó bắt đầu đi tuần. Mục tiêu của người chơi: tới bàn thờ thắp nhang mà không bị bắt.",
+    "when": { "all": ["shadow_appeared"], "none": ["ending", "caught"], "delay": 8 },
+    "actions": [
+      { "type": "entity", "do": "patrol" },
+      { "type": "setFlag", "flag": "hunting" }
+    ]
+  },
+  {
+    "id": "first_chase",
+    "when": { "all": ["chased"], "none": ["ending", "caught"] },
+    "actions": [
+      { "type": "wait", "seconds": 0.6 },
+      { "type": "subtitle", "text": "Nó thấy mình rồi.", "duration": 2.5 }
+    ]
+  },
+  {
+    "id": "hint_hide",
+    "comment": "Gợi ý chỗ trốn nếu người chơi bị đuổi mà chưa từng trốn.",
+    "when": { "all": ["chased"], "none": ["ending", "caught", "hid"], "delay": 9 },
+    "actions": [
+      { "type": "subtitle", "text": "Tủ áo trong phòng bà… hồi nhỏ mình hay trốn trong đó.", "duration": 4 }
+    ]
+  },
+  {
+    "id": "knock_again",
+    "when": { "all": ["knocking"], "none": ["ending", "caught", "hunting"], "delay": 30 },
+    "actions": [
+      { "type": "sound", "sound": "knock", "at": "frontDoor" },
+      { "type": "wait", "seconds": 0.45 },
+      { "type": "sound", "sound": "knock", "at": "frontDoor" },
+      { "type": "wait", "seconds": 0.45 },
+      { "type": "sound", "sound": "knock", "at": "frontDoor" },
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "sound", "sound": "whisper", "at": "frontDoor" },
+      { "type": "subtitle", "text": "“Út… ngoài này lạnh lắm con.”", "duration": 4, "voice": true },
+      { "type": "tension", "add": 0.15 }
+    ]
+  },
+  {
+    "id": "rule3_broken",
+    "comment": "Vi phạm quy tắc 3: nhìn thẳng vào ảnh thờ khi đèn đã tắt.",
+    "when": { "all": ["lights_off"], "none": ["ending", "caught"], "look": "photo" },
+    "actions": [
+      { "type": "photo", "variant": 6 },
+      { "type": "setFlag", "flag": "rule3_broken" },
+      { "type": "sound", "sound": "sting" },
+      { "type": "tension", "add": 0.3 },
+      { "type": "wait", "seconds": 1.2 },
+      { "type": "subtitle", "text": "“Út thấy bà rồi hả?”", "duration": 4, "voice": true },
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "entity", "do": "alert", "at": "hallEnd" },
+      { "type": "setFlag", "flag": "hunting" }
+    ]
+  },
+  {
+    "id": "ending_bad",
+    "when": { "all": ["opened_front_door"], "none": ["caught"] },
+    "actions": [
+      { "type": "setFlag", "flag": "ending" },
+      { "type": "entity", "do": "vanish" },
+      { "type": "wait", "seconds": 1.8 },
+      { "type": "lights", "state": "blackout" },
+      { "type": "sound", "sound": "sting" },
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "ending", "title": "Bạn đã mở cửa.", "text": "Ngoài hiên không có ai. Chỉ có tiếng gọi tên bạn — lần này, vọng ra từ trong nhà." }
+    ]
+  },
+  {
+    "id": "ending_good",
+    "when": { "all": ["lit_incense"], "none": ["opened_front_door", "caught"] },
+    "actions": [
+      { "type": "setFlag", "flag": "ending" },
+      { "type": "entity", "do": "vanish" },
+      { "type": "subtitle", "text": "Khói nhang bốc thẳng lên. Tiếng gõ ngừng hẳn.", "duration": 5 },
+      { "type": "tension", "add": -0.6 },
+      { "type": "wait", "seconds": 6 },
+      { "type": "ending", "title": "Đêm thứ nhất", "text": "Bạn đã không mở cửa. Nhưng trên tấm ảnh thờ, người thứ năm đã đứng gần hơn một chút.", "next": 2 }
+    ]
+  },
+  {
+    "id": "ending_caught",
+    "comment": "Bị Người Gõ Cửa bắt. Jumpscare do thực thể tự diễn; đây chỉ là phần sau đó.",
+    "when": { "all": ["caught"], "none": ["ending"] },
+    "actions": [
+      { "type": "setFlag", "flag": "ending" },
+      { "type": "wait", "seconds": 1.1 },
+      { "type": "lights", "state": "blackout" },
+      { "type": "entity", "do": "vanish" },
+      { "type": "wait", "seconds": 1.2 },
+      { "type": "ending", "title": "Nó tìm thấy bạn.", "text": "Sáng hôm sau chú Tư mở cửa vào. Cửa vẫn cài then bên trong, nhà không có ai.\nTrên tấm ảnh thờ giờ có sáu người." }
+    ]
+  }
+]

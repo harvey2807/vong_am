@@ -1,0 +1,40 @@
+{
+  "comment": "Thông số Người Gõ Cửa. Tốc độ m/s, khoảng cách m, thời gian giây. Người chơi: đi 1.8, chạy 3.3 (có giới hạn thể lực). Nhân thêm hệ số độ khó (core/difficulty.ts).",
+  "speed": {
+    "patrol": 0.85,
+    "investigate": 1.4,
+    "chase": 3.1
+  },
+  "sight": {
+    "range": 6,
+    "rangeFlashlight": 12,
+    "fov": 110,
+    "instantChaseDistance": 2.6,
+    "alertPerSecond": 1.1,
+    "alertDecayPerSecond": 0.2
+  },
+  "hearing": {
+    "sprint": 9,
+    "walk": 2.5
+  },
+  "catchDistance": 0.85,
+  "loseSightAfter": 4,
+  "searchTime": 4,
+  "wardrobeSearchTime": 6,
+  "patrolPause": [
+    1,
+    3
+  ],
+  "patrolTowardsPlayer": 0.35,
+  "lureEvery": [
+    14,
+    24
+  ],
+  "lures": [
+    "“Út ơi…”",
+    "“Út, bà nè. Ra đây với bà.”",
+    "“Con trốn đâu vậy Út?”",
+    "“Út… lạnh quá con.”"
+  ],
+  "wardrobeLure": "“Út… bà thấy con rồi.”"
+}

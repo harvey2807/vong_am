@@ -1,0 +1,125 @@
+[
+  {
+    "id": "intro",
+    "when": {},
+    "actions": [
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "subtitle", "text": "Đầu làng. Trời vừa sập tối mà đồng đã đen kịt.", "duration": 4 },
+      { "type": "wait", "seconds": 4.5 },
+      { "type": "subtitle", "text": "Cuối bờ ruộng kia là gốc đa — có ngọn đèn đỏ dưới gốc.", "duration": 4 },
+      { "type": "objective", "text": "Ra gốc đa đầu làng tìm chú Tư — đi theo bờ ruộng" }
+    ]
+  },
+  {
+    "id": "sign",
+    "comment": "Quy tắc của màn: qua đồng thì tắt đèn. Bù nhìn thức theo ánh đèn.",
+    "when": { "near": "fieldSign", "nearRadius": 3.5, "none": ["ending"] },
+    "actions": [
+      { "type": "subtitle", "text": "Tấm bìa ai treo trên cọc tre: “ĐÊM QUA ĐỒNG PHẢI TẮT ĐÈN”.", "duration": 4.5 },
+      { "type": "wait", "seconds": 5 },
+      { "type": "subtitle", "text": "Hồi nhỏ bà hay dọa: đèn soi tới đâu, bù nhìn thức tới đó.", "duration": 4.5 },
+      { "type": "setFlag", "flag": "field_rule" },
+      { "type": "objective", "text": "Ra gốc đa. Qua đồng thì tắt đèn pin (F) — đi theo đom đóm" }
+    ]
+  },
+  {
+    "id": "count_1",
+    "comment": "Tiếng chú Tư đếm vọng từ gốc đa — vừa là chỉ đường, vừa là đồng hồ đếm ngược.",
+    "when": { "all": ["field_rule"], "none": ["ending", "caught"], "delay": 8 },
+    "actions": [
+      { "type": "sound", "sound": "whisper", "at": "uncle" },
+      { "type": "subtitle", "text": "“…Một.”", "duration": 2.5, "voice": true }
+    ]
+  },
+  {
+    "id": "count_2",
+    "when": { "all": ["field_rule"], "none": ["ending", "caught"], "delay": 26 },
+    "actions": [
+      { "type": "sound", "sound": "whisper", "at": "uncle" },
+      { "type": "subtitle", "text": "“…Hai.”", "duration": 2.5, "voice": true },
+      { "type": "wait", "seconds": 3 },
+      { "type": "subtitle", "text": "Giọng chú Tư. Ở phía gốc đa.", "duration": 3 }
+    ]
+  },
+  {
+    "id": "count_3",
+    "when": { "all": ["field_rule"], "none": ["ending", "caught"], "delay": 48 },
+    "actions": [
+      { "type": "sound", "sound": "whisper", "at": "uncle" },
+      { "type": "subtitle", "text": "“…Ba.”", "duration": 2.5, "voice": true }
+    ]
+  },
+  {
+    "id": "count_4",
+    "when": { "all": ["field_rule"], "none": ["ending", "caught"], "delay": 72 },
+    "actions": [
+      { "type": "sound", "sound": "whisper", "at": "uncle" },
+      { "type": "subtitle", "text": "“…Bốn.”", "duration": 2.5, "voice": true, "glitch": "“…Út.”" }
+    ]
+  },
+  {
+    "id": "crow_moved",
+    "when": { "all": ["scarecrow_moved"], "none": ["ending", "caught"] },
+    "actions": [
+      { "type": "wait", "seconds": 0.8 },
+      { "type": "subtitle", "text": "…Con bù nhìn đó lúc nãy đâu có đứng gần vậy.", "duration": 3.5 }
+    ]
+  },
+  {
+    "id": "paddy_call",
+    "comment": "Quy tắc 2 vọng lại ngoài đồng: giọng mẹ gọi từ dưới ruộng nước. Trả lời = bù nhìn nổi giận.",
+    "when": { "near": "paddyCall", "nearRadius": 6, "none": ["ending", "caught"] },
+    "actions": [
+      { "type": "sound", "sound": "splash", "at": "paddyCall" },
+      { "type": "wait", "seconds": 0.8 },
+      { "type": "sound", "sound": "whisper", "at": "paddyCall" },
+      { "type": "subtitle", "text": "“Út ơi… mẹ nè. Xuống ruộng với mẹ…”", "duration": 4, "voice": true },
+      { "type": "choice", "text": "“Mẹ…?”", "flag": "answered_field", "seconds": 4 }
+    ]
+  },
+  {
+    "id": "answered_field",
+    "when": { "all": ["answered_field"], "none": ["ending", "caught"] },
+    "actions": [
+      { "type": "sound", "sound": "sting" },
+      { "type": "tension", "add": 0.4 },
+      { "type": "subtitle", "text": "Khắp đồng, tiếng rơm sột soạt. Tất cả bù nhìn đều quay đầu lại.", "duration": 4 },
+      { "type": "scarecrows", "do": "rage", "seconds": 12 },
+      { "type": "objective", "text": "Chạy ra gốc đa — tới bãi đất là chúng không theo nữa", "glitch": "Xuống ruộng với mẹ" }
+    ]
+  },
+  {
+    "id": "banyan",
+    "comment": "Tới gốc đa: chú Tư đếm tới năm, rồi quay lại.",
+    "when": { "near": "banyan", "nearRadius": 3.2, "none": ["ending", "caught"] },
+    "actions": [
+      { "type": "setFlag", "flag": "ending" },
+      { "type": "objective", "text": "" },
+      { "type": "subtitle", "text": "Chú Tư ngồi bệt dưới gốc đa, quay mặt vào thân cây.", "duration": 3.5 },
+      { "type": "wait", "seconds": 3.5 },
+      { "type": "sound", "sound": "whisper", "at": "uncle" },
+      { "type": "subtitle", "text": "“…Năm.”", "duration": 2.5, "voice": true },
+      { "type": "wait", "seconds": 2.5 },
+      { "type": "subtitle", "text": "“Chú Tư?”", "duration": 2 },
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "setFlag", "flag": "uncle_turn" },
+      { "type": "sound", "sound": "creak", "at": "uncle" },
+      { "type": "wait", "seconds": 2.4 },
+      { "type": "sound", "sound": "shriek" },
+      { "type": "lights", "state": "blackout" },
+      { "type": "wait", "seconds": 2 },
+      { "type": "ending", "title": "Gốc đa đầu làng", "text": "Chú Tư quay lại. Chỗ gương mặt chú chỉ còn một mảng da trơn, trắng như giấy.\nTôi không nhớ mình về nhà bằng cách nào. Chỉ nhớ suốt đường về, sau lưng có tiếng ai đếm tiếp:\n“…Sáu.”", "next": 3 }
+    ]
+  },
+  {
+    "id": "ending_caught",
+    "when": { "all": ["caught"], "none": ["ending"] },
+    "actions": [
+      { "type": "setFlag", "flag": "ending" },
+      { "type": "wait", "seconds": 1.1 },
+      { "type": "lights", "state": "blackout" },
+      { "type": "wait", "seconds": 1.2 },
+      { "type": "ending", "title": "Đèn soi tới đâu…", "text": "Sáng hôm sau, giữa ruộng nhà ông Bảy có thêm một con bù nhìn.\nNó mặc áo của bạn, và quay mặt về phía làng." }
+    ]
+  }
+]

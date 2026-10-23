@@ -1,0 +1,727 @@
+[
+  {
+    "id": "intro",
+    "when": {},
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Đêm thứ hai.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 3.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Mưa từ chập tối tới giờ. Chú Tư đi đâu mất rồi.",
+        "duration": 4
+      },
+      {
+        "type": "wait",
+        "seconds": 4.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Trên tủ đầu giường có tờ giấy.",
+        "duration": 3.5
+      },
+      {
+        "type": "objective",
+        "text": "Đọc giấy chú Tư để lại"
+      }
+    ]
+  },
+  {
+    "id": "uncle_read",
+    "when": {
+      "all": [
+        "read_uncle_note"
+      ]
+    },
+    "actions": [
+      {
+        "type": "objective",
+        "text": "Tìm 3 mảnh chén men lam (0/3)"
+      },
+      {
+        "type": "tension",
+        "add": 0.1
+      }
+    ]
+  },
+  {
+    "id": "tv_on",
+    "comment": "TV tự bật — một khoảnh khắc Devotion. Không nguy hiểm, chỉ để người chơi biết căn nhà đang 'thức'.",
+    "when": {
+      "all": [
+        "shard_any"
+      ],
+      "none": [
+        "ending",
+        "caught",
+        "lights_off"
+      ],
+      "delay": 8
+    },
+    "actions": [
+      {
+        "type": "tv",
+        "state": "static"
+      },
+      {
+        "type": "setFlag",
+        "flag": "tv_on"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "subtitle",
+        "text": "…Tiếng TV? Nhà bà đâu còn ai xem TV.",
+        "duration": 4
+      },
+      {
+        "type": "tension",
+        "add": 0.1
+      }
+    ]
+  },
+  {
+    "id": "tv_face",
+    "when": {
+      "all": [
+        "tv_on"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "look": "tv"
+    },
+    "actions": [
+      {
+        "type": "tv",
+        "state": "face"
+      },
+      {
+        "type": "sound",
+        "sound": "sting"
+      },
+      {
+        "type": "wait",
+        "seconds": 0.45
+      },
+      {
+        "type": "tv",
+        "state": "off"
+      },
+      {
+        "type": "setFlag",
+        "flag": "tv_seen"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "subtitle",
+        "text": "Cái mặt đó… lúc nãy nó nhìn mình.",
+        "duration": 4
+      }
+    ]
+  },
+  {
+    "id": "rule4",
+    "comment": "Quy tắc 4 — Bóng Sau Lưng: bước chân dừng ngay sau lưng. Quay lại trong 3 giây là chết.",
+    "when": {
+      "all": [
+        "shard_banana"
+      ],
+      "none": [
+        "ending",
+        "caught",
+        "hunting"
+      ],
+      "delay": 5
+    },
+    "actions": [
+      {
+        "type": "footstepsBehind"
+      }
+    ]
+  },
+  {
+    "id": "rule4_broken",
+    "when": {
+      "all": [
+        "rule4_broken"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "entity",
+        "do": "grab"
+      }
+    ]
+  },
+  {
+    "id": "rule4_kept",
+    "when": {
+      "all": [
+        "rule4_kept"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "sound",
+        "sound": "breath",
+        "at": "behindPlayer"
+      },
+      {
+        "type": "subtitle",
+        "text": "…một… hai… ba.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 4
+      },
+      {
+        "type": "subtitle",
+        "text": "Không còn ai sau lưng. Chỉ có hai dấu chân bùn, dừng ngay sau gót mình.",
+        "duration": 5
+      },
+      {
+        "type": "tension",
+        "add": 0.1
+      }
+    ]
+  },
+  {
+    "id": "well_call",
+    "comment": "Quy tắc 2: giọng mẹ gọi từ dưới giếng, hai lần. Bấm [E] để trả lời = vi phạm.",
+    "when": {
+      "all": [
+        "cranking"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 1.8
+    },
+    "actions": [
+      {
+        "type": "door",
+        "door": "backDoor",
+        "open": false
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "well"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út ơi… mẹ nè. Út có nghe mẹ gọi không?”",
+        "duration": 4,
+        "voice": true
+      },
+      {
+        "type": "choice",
+        "text": "“Dạ…?”",
+        "flag": "answered_well",
+        "seconds": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5.5
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "well"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út… dưới này lạnh lắm. Trả lời mẹ đi con.”",
+        "duration": 4,
+        "voice": true
+      },
+      {
+        "type": "choice",
+        "text": "“Mẹ…?”",
+        "flag": "answered_well",
+        "seconds": 4
+      }
+    ]
+  },
+  {
+    "id": "well_answered",
+    "when": {
+      "all": [
+        "answered_well"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "sound",
+        "sound": "sting"
+      },
+      {
+        "type": "setFlag",
+        "flag": "hunting"
+      },
+      {
+        "type": "tension",
+        "add": 0.35
+      },
+      {
+        "type": "wait",
+        "seconds": 0.8
+      },
+      {
+        "type": "sound",
+        "sound": "splash",
+        "at": "well"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út trả lời rồi.”",
+        "duration": 3,
+        "voice": true
+      },
+      {
+        "type": "photo",
+        "variant": 6
+      },
+      {
+        "type": "wait",
+        "seconds": 3
+      },
+      {
+        "type": "sound",
+        "sound": "heavyStep",
+        "at": "well"
+      },
+      {
+        "type": "subtitle",
+        "text": "Có cái gì đang leo lên từ dưới giếng. Chạy. Vô nhà, trốn đi.",
+        "duration": 4
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "sound",
+        "sound": "heavyStep",
+        "at": "well"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "entity",
+        "do": "alert",
+        "at": "well"
+      }
+    ]
+  },
+  {
+    "id": "glimpse",
+    "comment": "Thoáng thấy bóng trắng giữa bụi chuối — nhìn thẳng vào là biến mất.",
+    "when": {
+      "all": [
+        "shard_well"
+      ],
+      "none": [
+        "hunting",
+        "ending",
+        "caught"
+      ],
+      "delay": 2
+    },
+    "actions": [
+      {
+        "type": "entity",
+        "do": "appear",
+        "at": "bananaGrove"
+      },
+      {
+        "type": "setFlag",
+        "flag": "glimpse"
+      }
+    ]
+  },
+  {
+    "id": "glimpse_seen",
+    "when": {
+      "all": [
+        "glimpse"
+      ],
+      "none": [
+        "glimpse_done",
+        "hunting",
+        "ending"
+      ],
+      "visible": "entity"
+    },
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 0.7
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "setFlag",
+        "flag": "glimpse_done"
+      },
+      {
+        "type": "wait",
+        "seconds": 1
+      },
+      {
+        "type": "subtitle",
+        "text": "…Trong bụi chuối vừa có người đứng.",
+        "duration": 3.5
+      }
+    ]
+  },
+  {
+    "id": "glimpse_timeout",
+    "when": {
+      "all": [
+        "glimpse"
+      ],
+      "none": [
+        "glimpse_done",
+        "hunting"
+      ],
+      "delay": 20
+    },
+    "actions": [
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "setFlag",
+        "flag": "glimpse_done"
+      }
+    ]
+  },
+  {
+    "id": "all_shards",
+    "comment": "Lớp 3: gom đủ thì nó tới. Phải về bàn thờ trong bóng tối, không được nhìn ảnh thờ.",
+    "when": {
+      "all": [
+        "all_shards"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "objective",
+        "text": "Đem chén men lam về đặt lên bàn thờ",
+        "glitch": "Mở cửa cho bà"
+      },
+      {
+        "type": "subtitle",
+        "text": "Đủ ba mảnh rồi.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 4
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.8
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.8
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "tension",
+        "add": 0.3
+      },
+      {
+        "type": "wait",
+        "seconds": 2
+      },
+      {
+        "type": "lights",
+        "state": "flicker"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.6
+      },
+      {
+        "type": "lights",
+        "state": "off"
+      },
+      {
+        "type": "tv",
+        "state": "off"
+      },
+      {
+        "type": "setFlag",
+        "flag": "lights_off"
+      },
+      {
+        "type": "wait",
+        "seconds": 2.5
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út ơi, đưa cái chén cho bà. Bà cất cho.”",
+        "duration": 4.5,
+        "voice": true
+      }
+    ]
+  },
+  {
+    "id": "all_shards_hunt",
+    "when": {
+      "all": [
+        "all_shards",
+        "lights_off"
+      ],
+      "none": [
+        "hunting",
+        "ending",
+        "caught"
+      ],
+      "delay": 6
+    },
+    "actions": [
+      {
+        "type": "entity",
+        "do": "patrol",
+        "at": "hallEnd"
+      },
+      {
+        "type": "setFlag",
+        "flag": "hunting"
+      },
+      {
+        "type": "subtitle",
+        "text": "Nó vô nhà rồi.",
+        "duration": 3
+      }
+    ]
+  },
+  {
+    "id": "first_chase",
+    "when": {
+      "all": [
+        "chased"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 0.6
+      },
+      {
+        "type": "subtitle",
+        "text": "Nó thấy mình rồi.",
+        "duration": 2.5
+      }
+    ]
+  },
+  {
+    "id": "rule3_broken",
+    "comment": "Vi phạm quy tắc 3: nhìn thẳng vào ảnh thờ khi đèn đã tắt.",
+    "when": {
+      "all": [
+        "lights_off"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "look": "photo"
+    },
+    "actions": [
+      {
+        "type": "photo",
+        "variant": 6
+      },
+      {
+        "type": "setFlag",
+        "flag": "rule3_broken"
+      },
+      {
+        "type": "sound",
+        "sound": "sting"
+      },
+      {
+        "type": "tension",
+        "add": 0.3
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út thấy bà rồi hả?”",
+        "duration": 4,
+        "voice": true
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "entity",
+        "do": "alert",
+        "at": "hallEnd"
+      },
+      {
+        "type": "setFlag",
+        "flag": "hunting"
+      }
+    ]
+  },
+  {
+    "id": "ending_good",
+    "when": {
+      "all": [
+        "bowl_placed"
+      ],
+      "none": [
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "subtitle",
+        "text": "Ba mảnh chén khớp vào nhau, không còn một vết nứt.",
+        "duration": 4.5
+      },
+      {
+        "type": "tension",
+        "add": -0.7
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "subtitle",
+        "text": "Ngoài hiên, tiếng gõ cửa xa dần… rồi tắt hẳn.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5.5
+      },
+      {
+        "type": "ending",
+        "title": "Đêm thứ hai",
+        "text": "Cái chén đã về lại bàn thờ. Sáng mai chú Tư sẽ về.\nNhưng trên tấm ảnh, người thứ năm đã quay mặt đi — như đang nhìn ra cửa, chờ một người khác trong nhà.",
+        "next": 2.5
+      }
+    ]
+  },
+  {
+    "id": "ending_caught",
+    "when": {
+      "all": [
+        "caught"
+      ],
+      "none": [
+        "ending"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.1
+      },
+      {
+        "type": "lights",
+        "state": "blackout"
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "ending",
+        "title": "Nó tìm thấy bạn.",
+        "text": "Sáng hôm sau chú Tư về. Cửa vẫn cài then bên trong, nhà không có ai.\nTrên tấm ảnh thờ giờ có sáu người."
+      }
+    ]
+  }
+]

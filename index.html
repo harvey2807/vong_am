@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VONG ÂM — Tiếng Gọi Sau Cánh Cửa</title>
+    <link rel="icon" href="data:," />
+    <!-- Nạp CSS ngay trong HTML: trang có kiểu dáng từ khung hình đầu, kể cả khi JS còn đang tải. -->
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="game" tabindex="1"></canvas>
+
+    <!-- Màn hình đang tải: chỉ HTML + CSS, hiện ngay cả khi JavaScript (Babylon ~ vài MB) còn đang tải. -->
+    <div id="loading" aria-live="polite">
+      <div class="ld-rain" aria-hidden="true"></div>
+      <div class="ld-incense" aria-hidden="true"><i class="ld-smoke"></i><i class="ld-smoke s2"></i><i class="ld-smoke s3"></i><b></b></div>
+      <p class="ld-text">Đang thắp nhang…</p>
+      <p class="ld-sub">VONG ÂM</p>
+    </div>
+
+    <!-- ============================================================ HUD trong game -->
+    <div id="vignette" aria-hidden="true"></div>
+    <div id="hide-overlay" class="hidden" aria-hidden="true"></div>
+    <div id="crosshair" aria-hidden="true"></div>
+    <div id="prompt" class="hidden" role="status"><kbd class="key">E</kbd><span class="label"></span></div>
+    <div id="objective" class="hidden" role="status"><span class="obj-label">Việc cần làm</span><span class="obj-text"></span></div>
+    <div id="subtitle" role="status" aria-live="polite"></div>
+    <pre id="errors" class="hidden"></pre>
+
+    <!-- ============================================================ giấy / ảnh -->
+    <div id="reader" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="reader-title">
+      <!-- Bộ lọc SVG tạo mép giấy rách/cháy và thớ giấy — không dùng ảnh. -->
+      <svg class="svg-defs" width="0" height="0" aria-hidden="true">
+        <filter id="paper-edge" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="4" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="paper-edge-burnt" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="11" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      <article class="paper" id="paper" data-paper="school">
+        <div class="paper-sheet" aria-hidden="true"></div>
+        <div class="paper-content">
+          <h2 id="reader-title"></h2>
+          <figure class="photo-frame"><canvas id="reader-photo" width="512" height="384"></canvas></figure>
+          <div id="reader-body"></div>
+        </div>
+        <p class="paper-page" id="reader-page"></p>
+      </article>
+      <p class="reader-hint"><span id="reader-pager"><kbd>A</kbd> <kbd>D</kbd> lật trang · </span><kbd class="key">E</kbd> đặt xuống</p>
+    </div>
+
+    <!-- ============================================================ màn hình chính -->
+    <div id="start" class="overlay screen-menu">
+      <canvas id="menu-bg" aria-hidden="true"></canvas>
+      <div class="menu-content">
+        <header class="brand">
+          <h1 class="title glitch" data-text="VONG ÂM">VONG ÂM</h1>
+          <p class="title-en">The Voice Behind The Door</p>
+          <p class="tagline">Có những tiếng gọi không bao giờ nên được trả lời…</p>
+        </header>
+        <nav class="menu-list" id="menu-list" aria-label="Màn hình chính">
+          <span class="loading">Đang thắp nhang…</span>
+        </nav>
+      </div>
+      <p class="menu-foot"><span id="sound-hint" class="sound-hint">Bấm phím hoặc chuột bất kỳ để nghe tiếng mưa ·</span> Nên đeo tai nghe · <kbd>WASD</kbd> đi · <kbd>Shift</kbd> chạy · <kbd>E</kbd> tương tác · <kbd>F</kbd> đèn pin · <kbd>Esc</kbd> tạm dừng</p>
+    </div>
+
+    <!-- ============================================================ chuyển chương -->
+    <div id="chapter" class="overlay hidden">
+      <p class="chapter-no" id="chapter-no"></p>
+      <h2 class="chapter-title" id="chapter-title"></h2>
+      <div class="chapter-lines" id="chapter-lines"></div>
+      <button id="chapter-go" class="btn btn-primary" disabled>Đang thắp nhang…</button>
+    </div>
+
+    <!-- ============================================================ tạm dừng -->
+    <div id="pause" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <section class="panel pause-panel">
+        <h2 id="pause-title" class="panel-title">Tạm dừng</h2>
+        <nav class="menu-list compact" id="pause-list">
+          <button class="menu-item primary" id="resume-btn"><span class="mi-label">Tiếp tục</span></button>
+          <button class="menu-item" id="pause-settings"><span class="mi-label">Cài đặt</span></button>
+          <button class="menu-item" id="pause-menu"><span class="mi-label">Về màn hình chính</span><span class="mi-sub">Lần sau chơi lại từ đầu đêm này</span></button>
+        </nav>
+      </section>
+    </div>
+
+    <!-- ============================================================ bảng phụ (cài đặt, ghi công, hồi tưởng) -->
+    <div id="panel-settings" class="overlay modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <section class="panel">
+        <h2 id="settings-title" class="panel-title">Cài đặt</h2>
+        <div class="settings" id="settings-list"></div>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" id="fullscreen-btn">Toàn màn hình</button>
+          <button class="btn btn-primary" data-close>Xong</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="panel-credits" class="overlay modal hidden" role="dialog" aria-modal="true" aria-labelledby="credits-title">
+      <section class="panel credits">
+        <h2 id="credits-title" class="panel-title">Ghi công</h2>
+        <p class="credits-lead">VONG ÂM — Tiếng Gọi Sau Cánh Cửa<br /><span>bản thử nghiệm</span></p>
+        <dl>
+          <dt>Công cụ</dt><dd>Babylon.js · TypeScript · Vite · Web Audio (âm thanh tổng hợp bằng code)</dd>
+          <dt>Texture tường, trần, gỗ, gạch, đất</dt><dd>Poly Haven — CC0</dd>
+          <dt>Phông chữ</dt><dd>Cormorant Garamond · Noto Serif · Be Vietnam Pro · Patrick Hand — SIL Open Font License</dd>
+          <dt>Còn lại</dt><dd>Câu đối, bùa, di ảnh, hình nhân, cảnh hẻm mưa… đều vẽ bằng code trong game</dd>
+        </dl>
+        <p class="credits-note">Các thực thể và tục lệ trong game là hư cấu, lấy cảm hứng từ văn hóa dân gian Việt Nam.</p>
+        <div class="panel-actions"><button class="btn btn-primary" data-close>Đóng</button></div>
+      </section>
+    </div>
+
+    <div id="panel-memories" class="overlay modal hidden" role="dialog" aria-modal="true" aria-labelledby="memories-title">
+      <section class="panel">
+        <h2 id="memories-title" class="panel-title">Hồi tưởng</h2>
+        <p class="panel-sub">Chơi lại một đêm đã qua. Tiến trình hiện tại không đổi.</p>
+        <nav class="menu-list compact" id="memory-list"></nav>
+        <div class="panel-actions"><button class="btn btn-ghost" data-close>Đóng</button></div>
+      </section>
+    </div>
+
+    <!-- ============================================================ kết thúc -->
+    <div id="ending" class="overlay hidden">
+      <p class="ending-kicker" id="ending-kicker"></p>
+      <h1 id="ending-title"></h1>
+      <div id="ending-text"></div>
+      <div class="ending-actions" id="ending-actions"></div>
+      <details class="playtest-toggle">
+        <summary>Góp ý chơi thử</summary>
+        <form id="playtest" onsubmit="return false">
+          <p class="pt-summary" id="pt-summary"></p>
+          <label>Mức độ sợ (1 = không sợ, 5 = rất sợ)</label>
+          <div class="pt-fear" id="pt-fear"></div>
+          <label for="pt-scariest">Lúc nào bạn sợ nhất?</label>
+          <textarea id="pt-scariest" rows="2"></textarea>
+          <label for="pt-boring">Lúc nào thấy chán, khó hiểu hoặc bị kẹt?</label>
+          <textarea id="pt-boring" rows="2"></textarea>
+          <button id="pt-download" class="btn btn-primary" type="button">Tải nhật ký chơi thử (.json)</button>
+          <p class="pt-hint">Gửi file vừa tải cho người làm game. File chỉ chứa diễn biến trong game và câu trả lời ở trên.</p>
+        </form>
+      </details>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

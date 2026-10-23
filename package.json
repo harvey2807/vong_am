@@ -1,0 +1,21 @@
+{
+  "name": "vong-am",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "play": "vite build && vite preview --port 4173 --strictPort",
+    "package": "npm run build && rm -f vongam-web.zip && cd dist && zip -qr ../vongam-web.zip . && cd .. && echo 'Đã tạo vongam-web.zip — upload lên itch.io dạng HTML game'"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^9.31.2"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

@@ -1,0 +1,607 @@
+[
+  {
+    "id": "intro",
+    "when": {},
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Đêm thứ tư. Đêm cuối.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 3.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Sáng nay có người đứng ngoài cổng, mặc cái áo sơ mi trắng của mình. Chiều thì không thấy nữa.",
+        "duration": 5
+      },
+      {
+        "type": "wait",
+        "seconds": 5.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Dưới lư hương có kẹp một trang giấy.",
+        "duration": 3.5
+      },
+      {
+        "type": "objective",
+        "text": "Đọc trang giấy trên bàn thờ"
+      }
+    ]
+  },
+  {
+    "id": "the_double",
+    "comment": "Cả ba thực thể trong một đêm: Người Gõ Cửa mang mặt Út, hình nhân thức dậy khi tắt đèn, bước chân sau lưng.",
+    "when": {
+      "all": [
+        "read_last_page"
+      ]
+    },
+    "actions": [
+      {
+        "type": "objective",
+        "text": "Tìm cây kéo trong hộp may của bà (phòng bà)"
+      },
+      {
+        "type": "wait",
+        "seconds": 4
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.6
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.6
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "setFlag",
+        "flag": "knocking"
+      },
+      {
+        "type": "tension",
+        "add": 0.3
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Mở cửa. Tao là Út. Mày mới là đồ giả.”",
+        "duration": 4.5,
+        "voice": true
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "subtitle",
+        "text": "…Đó là giọng của mình.",
+        "duration": 3,
+        "glitch": "…Đó là giọng của TAO."
+      },
+      {
+        "type": "wait",
+        "seconds": 3
+      },
+      {
+        "type": "lights",
+        "state": "flicker"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.6
+      },
+      {
+        "type": "lights",
+        "state": "off"
+      },
+      {
+        "type": "setFlag",
+        "flag": "lights_off"
+      },
+      {
+        "type": "effigies",
+        "do": "wake"
+      },
+      {
+        "type": "wait",
+        "seconds": 3
+      },
+      {
+        "type": "entity",
+        "do": "disguise"
+      },
+      {
+        "type": "entity",
+        "do": "patrol",
+        "at": "hallEnd"
+      },
+      {
+        "type": "setFlag",
+        "flag": "hunting"
+      },
+      {
+        "type": "sound",
+        "sound": "heavyStep",
+        "at": "hallEnd"
+      },
+      {
+        "type": "subtitle",
+        "text": "Trong nhà có tiếng bước chân. Dáng đi y như mình.",
+        "duration": 4
+      }
+    ]
+  },
+  {
+    "id": "lure_grandma",
+    "comment": "Quy tắc 1 lần cuối: giọng bà, giọng mẹ — và lời buộc tội rằng thứ trong nhà mới là đồ giả.",
+    "when": {
+      "all": [
+        "hunting"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 40
+    },
+    "actions": [
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 0.5
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 0.5
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út ơi, bà nè! Cái đứa trong nhà không phải con đâu… mở cửa cho bà, nhanh lên!”",
+        "duration": 5,
+        "voice": true
+      }
+    ]
+  },
+  {
+    "id": "lure_mother",
+    "when": {
+      "all": [
+        "hunting"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 95
+    },
+    "actions": [
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "frontDoor"
+      },
+      {
+        "type": "wait",
+        "seconds": 2
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út… mẹ về rồi. Ngoài này mưa lạnh quá. Mẹ nhớ con.”",
+        "duration": 5,
+        "voice": true
+      }
+    ]
+  },
+  {
+    "id": "obj_power",
+    "when": {
+      "all": [
+        "has_scissors"
+      ],
+      "none": [
+        "has_family_photo"
+      ]
+    },
+    "actions": [
+      {
+        "type": "objective",
+        "text": "Bật cầu dao ở tường bếp, rồi gỡ ảnh thờ khi đèn còn sáng"
+      }
+    ]
+  },
+  {
+    "id": "power_first",
+    "when": {
+      "all": [
+        "power_used"
+      ],
+      "none": [
+        "has_family_photo",
+        "ending"
+      ]
+    },
+    "actions": [
+      {
+        "type": "subtitle",
+        "text": "Đèn sáng rồi. Nhanh — nó sẽ gạt cầu dao lần nữa. Cả nhà nghe thấy tiếng cầu dao.",
+        "duration": 4.5
+      },
+      {
+        "type": "objective",
+        "text": "Gỡ ảnh thờ xuống khi đèn còn sáng"
+      }
+    ]
+  },
+  {
+    "id": "rule4",
+    "when": {
+      "all": [
+        "has_scissors"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 22
+    },
+    "actions": [
+      {
+        "type": "footstepsBehind"
+      }
+    ]
+  },
+  {
+    "id": "rule4_broken",
+    "when": {
+      "all": [
+        "rule4_broken"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "entity",
+        "do": "grab"
+      }
+    ]
+  },
+  {
+    "id": "rule4_kept",
+    "when": {
+      "all": [
+        "rule4_kept"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "sound",
+        "sound": "breath",
+        "at": "behindPlayer"
+      },
+      {
+        "type": "subtitle",
+        "text": "…một… hai… ba.",
+        "duration": 3
+      },
+      {
+        "type": "wait",
+        "seconds": 4
+      },
+      {
+        "type": "subtitle",
+        "text": "Sau lưng không có ai. Chỉ có mùi nhang, và hơi ấm như vừa có người đứng sát.",
+        "duration": 5
+      }
+    ]
+  },
+  {
+    "id": "photo_taken",
+    "when": {
+      "all": [
+        "has_family_photo"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "subtitle",
+        "text": "Trong ảnh, người thứ năm đang nhìn thẳng vào mình. Nó cười.",
+        "duration": 4
+      },
+      {
+        "type": "objective",
+        "text": "Cắt người thứ năm ra khỏi ảnh, đốt trong thau vàng mã cạnh bàn thờ",
+        "glitch": "Nhìn vào ảnh đi Út"
+      },
+      {
+        "type": "tension",
+        "add": 0.2
+      }
+    ]
+  },
+  {
+    "id": "rule3_broken",
+    "comment": "Vi phạm quy tắc 3: nhìn ảnh thờ khi đèn tắt.",
+    "when": {
+      "all": [
+        "lights_off"
+      ],
+      "none": [
+        "ending",
+        "caught",
+        "has_family_photo"
+      ],
+      "look": "photo"
+    },
+    "actions": [
+      {
+        "type": "photo",
+        "variant": 6
+      },
+      {
+        "type": "setFlag",
+        "flag": "rule3_broken"
+      },
+      {
+        "type": "sound",
+        "sound": "sting"
+      },
+      {
+        "type": "tension",
+        "add": 0.3
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út thấy tao rồi hả?”",
+        "duration": 4,
+        "voice": true
+      },
+      {
+        "type": "wait",
+        "seconds": 1
+      },
+      {
+        "type": "entity",
+        "do": "alert",
+        "at": "hallEnd"
+      }
+    ]
+  },
+  {
+    "id": "ending_good",
+    "when": {
+      "all": [
+        "fifth_burned"
+      ],
+      "none": [
+        "caught",
+        "opened_front_door"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "objective",
+        "text": ""
+      },
+      {
+        "type": "effigies",
+        "do": "sleep"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "sound",
+        "sound": "shriek",
+        "at": "frontDoor"
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "subtitle",
+        "text": "Ngoài cổng có tiếng hét — giọng của chính mình — rồi tắt lịm.",
+        "duration": 4.5
+      },
+      {
+        "type": "tension",
+        "add": -1
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "lights",
+        "state": "on"
+      },
+      {
+        "type": "subtitle",
+        "text": "Đèn sáng lại. Mưa cũng tạnh.",
+        "duration": 3.5
+      },
+      {
+        "type": "wait",
+        "seconds": 4.5
+      },
+      {
+        "type": "ending",
+        "title": "Hết",
+        "text": "Gần sáng, chú Tư về, ngồi xuống bậc cửa khóc như con nít. Chú không nhớ gì về ba đêm qua.\nTấm ảnh thờ giờ chỉ còn bốn người. Ở chỗ bị cắt, có một vết cháy nhỏ hình bàn tay.\n\nTối đó, lần đầu tiên sau bốn đêm, không ai gõ cửa.",
+        "final": true
+      }
+    ]
+  },
+  {
+    "id": "ending_door",
+    "comment": "Mở cửa cho 'chính mình': nó vào nhà, bạn ở ngoài.",
+    "when": {
+      "all": [
+        "opened_front_door"
+      ],
+      "none": [
+        "caught",
+        "fifth_burned"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Cảm ơn nha, Út.”",
+        "duration": 3,
+        "voice": true
+      },
+      {
+        "type": "wait",
+        "seconds": 2.5
+      },
+      {
+        "type": "lights",
+        "state": "blackout"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "ending",
+        "title": "Bạn đã mở cửa cho chính mình.",
+        "text": "Người đứng ngoài hiên có gương mặt của bạn. Nó mỉm cười, bước vào, quỳ xuống thắp cho bà một nén nhang.\nCòn bạn đứng ngoài mưa. Bạn gõ cửa ba lần.\nKhông ai mở."
+      }
+    ]
+  },
+  {
+    "id": "ending_caught",
+    "when": {
+      "all": [
+        "caught"
+      ],
+      "none": [
+        "ending"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.1
+      },
+      {
+        "type": "lights",
+        "state": "blackout"
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "ending",
+        "title": "Nó lấy được mặt bạn.",
+        "text": "Sáng hôm sau, chú Tư về. Út ra mở cổng, cười, nói mấy đêm nay ngủ ngon lắm.\nChú Tư không để ý rằng Út cao hơn trước một chút."
+      }
+    ]
+  }
+]
