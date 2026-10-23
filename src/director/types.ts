@@ -23,6 +23,8 @@ export interface Condition {
   hidden?: string;
   /** Người chơi phải đang nhìn thẳng vào mục tiêu ở cự ly gần. */
   look?: string;
+  /** Đi kèm `look`: phải nhìn liên tục chừng này giây (liếc qua thì chưa tính). */
+  lookFor?: number;
   /** Mục tiêu đang nằm TRONG tầm nhìn (mọi khoảng cách). */
   visible?: string;
   /** Người chơi đang ở gần anchor này (trong `nearRadius` mét, mặc định 3) — dùng cho bản đồ ngoài trời. */

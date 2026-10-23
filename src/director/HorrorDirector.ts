@@ -15,6 +15,8 @@ export class HorrorDirector {
   private readonly flags = new Set<string>();
   private readonly fired = new Set<string>();
   private readonly readySince = new Map<string, number>();
+  /** Lúc bắt đầu nhìn liên tục vào mục tiêu `look` của từng sự kiện. */
+  private readonly lookSince = new Map<string, number>();
   private running: Sequence[] = [];
   private time = 0;
   /** Gọi mỗi khi bật cờ mới hoặc kích hoạt sự kiện — dùng cho nhật ký chơi thử. */
@@ -49,7 +51,14 @@ export class HorrorDirector {
       if (!this.readySince.has(ev.id)) this.readySince.set(ev.id, this.time);
       if (this.time - this.readySince.get(ev.id)! < (ev.when.delay ?? 0)) continue;
       if (ev.when.hidden && this.ctx.isVisible(ev.when.hidden)) continue;
-      if (ev.when.look && !this.ctx.isLookedAt(ev.when.look)) continue;
+      if (ev.when.look) {
+        if (!this.ctx.isLookedAt(ev.when.look)) {
+          this.lookSince.delete(ev.id);
+          continue;
+        }
+        if (!this.lookSince.has(ev.id)) this.lookSince.set(ev.id, this.time);
+        if (this.time - this.lookSince.get(ev.id)! < (ev.when.lookFor ?? 0)) continue;
+      }
       if (ev.when.visible && !this.ctx.isVisible(ev.when.visible)) continue;
       if (ev.when.near && !this.ctx.isNear(ev.when.near, ev.when.nearRadius ?? 3)) continue;
       if (ev.when.floor !== undefined && this.ctx.playerFloor() !== ev.when.floor) continue;

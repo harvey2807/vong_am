@@ -42,6 +42,8 @@ export class Stalker {
         this.phase = "watch";
         this.timer = WATCH_TIME;
         this.yaw0 = cam.rotation.y;
+        // Nhắc quy tắc ngay lúc phải giữ — người chơi đang vội rất dễ quên mà quay người.
+        this.game.hud.subtitle("Bước chân dừng ngay sau lưng. Đừng quay lại — đếm tới ba.", WATCH_TIME);
       }
       return;
     }

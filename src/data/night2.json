@@ -248,7 +248,7 @@
   },
   {
     "id": "rule4",
-    "comment": "Quy tắc 4 — Bóng Sau Lưng: lấy được mảnh chén ở mộ ông, trên đường về thì bước chân dừng ngay sau lưng.",
+    "comment": "Quy tắc 4 — Bóng Sau Lưng: lấy được mảnh chén ở mộ ông, trên đường về thì bước chân dừng ngay sau lưng. Không chồng lên đoạn chạy về bàn thờ: gom đủ ba mảnh rồi thì bỏ qua.",
     "when": {
       "all": [
         "shard_grave"
@@ -256,7 +256,8 @@
       "none": [
         "ending",
         "caught",
-        "hunting"
+        "hunting",
+        "all_shards"
       ],
       "delay": 5
     },
@@ -759,7 +760,7 @@
     "actions": [
       {
         "type": "objective",
-        "text": "Đem chén men lam về đặt lên bàn thờ",
+        "text": "Đem chén men lam về đặt lên bàn thờ — vô bằng cửa bếp",
         "glitch": "Mở cửa cho bà",
         "hints": [
           "Đặt chén ở bát nhang trên bàn thờ phòng khách — không cần nhìn thẳng vào ảnh thờ.",
@@ -840,6 +841,43 @@
         "text": "“Út ơi, đưa cái chén cho bà. Bà cất cho.”",
         "duration": 4.5,
         "voice": true
+      },
+      {
+        "type": "objective",
+        "text": "Lẻn lên bàn thờ trong bóng tối. Đừng nhìn ảnh thờ."
+      }
+    ]
+  },
+  {
+    "id": "back_inside",
+    "comment": "Mang đủ ba mảnh vào tới bếp sau khi đèn tắt.",
+    "when": {
+      "all": [
+        "all_shards",
+        "lights_off"
+      ],
+      "none": [
+        "back_inside",
+        "ending",
+        "caught"
+      ],
+      "near": "kitchen",
+      "nearRadius": 2.2
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "back_inside"
+      },
+      {
+        "type": "sound",
+        "sound": "heavyStep",
+        "at": "bedroomInside"
+      },
+      {
+        "type": "subtitle",
+        "text": "Trong nhà tối om. Phía phòng bà có tiếng chân ai lê trên nền gạch.",
+        "duration": 4
       }
     ]
   },
@@ -848,31 +886,38 @@
     "when": {
       "all": [
         "all_shards",
-        "lights_off"
+        "lights_off",
+        "back_inside"
       ],
       "none": [
         "hunting",
         "ending",
         "caught"
       ],
-      "delay": 6
+      "delay": 10
     },
     "actions": [
       {
         "type": "entity",
         "do": "patrol",
-        "at": "hallEnd"
+        "at": "bedroomInside"
       },
       {
         "type": "setFlag",
         "flag": "hunting"
       },
       {
+        "type": "sound",
+        "sound": "creak",
+        "at": "bedroomInside"
+      },
+      {
         "type": "subtitle",
-        "text": "Nó vô nhà rồi.",
-        "duration": 3
+        "text": "Cửa phòng bà kẽo kẹt. Nó vô nhà rồi.",
+        "duration": 3.5
       }
-    ]
+    ],
+    "comment": "Nó chỉ bắt đầu săn sau khi người chơi đã vào nhà (cửa bếp), xuất phát từ phòng bà — xa đường bếp → hành lang → bàn thờ. Đi khẽ, tắt đèn pin thì kịp."
   },
   {
     "id": "first_chase",
@@ -898,17 +943,53 @@
     ]
   },
   {
-    "id": "rule3_broken",
-    "comment": "Vi phạm quy tắc 3: nhìn thẳng vào ảnh thờ khi đèn đã tắt.",
+    "id": "rule3_warn",
+    "comment": "Liếc trúng ảnh thờ lần đầu: nhắc quy tắc 3 và cho người chơi kịp nhìn đi chỗ khác.",
     "when": {
       "all": [
         "lights_off"
       ],
       "none": [
         "ending",
-        "caught"
+        "caught",
+        "rule3_warned"
       ],
       "look": "photo"
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "rule3_warned"
+      },
+      {
+        "type": "sound",
+        "sound": "whisper"
+      },
+      {
+        "type": "subtitle",
+        "text": "Trong ảnh có ai vừa nhúc nhích. — Đèn tắt thì đừng nhìn ảnh thờ. Nhìn xuống.",
+        "duration": 4
+      },
+      {
+        "type": "tension",
+        "add": 0.15
+      }
+    ]
+  },
+  {
+    "id": "rule3_broken",
+    "comment": "Vi phạm quy tắc 3: sau khi đã được nhắc, vẫn nhìn chằm chằm vào ảnh thờ khi đèn tắt.",
+    "when": {
+      "all": [
+        "lights_off",
+        "rule3_warned"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "look": "photo",
+      "lookFor": 1.6
     },
     "actions": [
       {

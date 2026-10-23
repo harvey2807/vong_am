@@ -208,6 +208,7 @@ export class House {
     this.anchors.set("bedroomInside", new Vector3(3.6, 1.4, 4.2));
     this.anchors.set("altar", new Vector3(-6.3, 1.4, 3));
     this.anchors.set("hallEnd", new Vector3(0, 0, -3.6));
+    this.anchors.set("kitchen", new Vector3(3.6, 1.2, -4.6));
     // Góc tường trên bàn thờ — chỗ con thạch sùng "chặc lưỡi" sau khi đọc lời bà dặn.
     this.anchors.set("altarWall", new Vector3(-6.8, 2.6, 4.6));
     this.anchors.set("kitchenTin", TIN_POS.clone());
