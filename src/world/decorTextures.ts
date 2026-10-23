@@ -130,6 +130,123 @@ export function calendarUrl(): string {
   });
 }
 
+/** Lịch bloc của tiệm Phúc Ký: dừng ở Rằm tháng Bảy năm 2003 — hai mươi mốt năm trước tờ lịch dưới bếp. */
+export function calendar2003Url(): string {
+  return paintedRect("calendar2003", 96, 128, (ctx, w, h) => {
+    ctx.fillStyle = "#6e1a12";
+    ctx.fillRect(0, 0, w, 22);
+    ctx.fillStyle = "#cfc4a8";
+    ctx.fillRect(0, 22, w, h - 22);
+    ctx.fillStyle = "#e9d9b2";
+    ctx.font = "bold 11px serif";
+    ctx.textAlign = "center";
+    ctx.fillText("THÁNG 8 · 2003", w / 2, 15);
+    ctx.fillStyle = "#8a1c14";
+    ctx.font = "bold 58px serif";
+    ctx.fillText("12", w / 2, 82);
+    ctx.fillStyle = "#2a2018";
+    ctx.font = "11px serif";
+    ctx.fillText("THỨ BA", w / 2, 98);
+    ctx.font = "italic 10px serif";
+    ctx.fillText("Âm lịch: Rằm tháng Bảy", w / 2, 114);
+    // Ố vàng, mốc, một vệt nước chảy dọc.
+    speckle(ctx, w, h, 260, "rgba(70,50,20,0.2)", 3);
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, "rgba(90,60,20,0)");
+    g.addColorStop(1, "rgba(90,60,20,0.35)");
+    ctx.fillStyle = g;
+    ctx.fillRect(w * 0.62, 22, 9, h);
+  });
+}
+
+/** Gương mặt con nít dưới mặt ao: trắng bệch, hốc mắt tối, tóc bết, viền tan vào nước (có alpha). */
+export function drownedFaceUrl(): string {
+  return paintedRect("drownedFace", 96, 128, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(w / 2, h * 0.5, 4, w / 2, h * 0.5, w * 0.55);
+    g.addColorStop(0, "rgba(205,215,210,0.95)");
+    g.addColorStop(0.7, "rgba(150,165,160,0.6)");
+    g.addColorStop(1, "rgba(60,75,70,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(w / 2, h * 0.52, w * 0.36, h * 0.38, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(10,14,12,0.9)";
+    for (const dx of [-14, 14]) {
+      ctx.beginPath();
+      ctx.ellipse(w / 2 + dx, h * 0.46, 7, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.ellipse(w / 2, h * 0.7, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Tóc bết dính trán.
+    ctx.strokeStyle = "rgba(8,10,8,0.85)";
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 16; i++) {
+      const x = w * 0.2 + Math.random() * w * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(x, h * 0.12);
+      ctx.quadraticCurveTo(x + (Math.random() - 0.5) * 18, h * 0.3, x + (Math.random() - 0.5) * 10, h * (0.3 + Math.random() * 0.25));
+      ctx.stroke();
+    }
+  });
+}
+
+/** Hộp "iPhone" bằng giấy — hàng mã đời mới, dán tem chữ Hán. */
+export function paperPhoneUrl(): string {
+  return paintedRect("paperPhone", 64, 96, (ctx, w, h) => {
+    ctx.fillStyle = "#f0ece2";
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "#1c1c1c";
+    ctx.fillRect(10, 12, w - 20, h - 28);
+    ctx.fillStyle = "#3c5f8a";
+    ctx.fillRect(13, 16, w - 26, h - 36);
+    ctx.fillStyle = "#e8e2d4";
+    ctx.font = "bold 9px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("iPhone 15", w / 2, h - 6);
+    ctx.fillStyle = "#b8231a";
+    ctx.fillRect(w - 18, 2, 14, 14);
+    glyph(ctx, w - 18, 2, 14, "#f2d27a");
+  });
+}
+
+/** Tờ giấy hồng điều ghi ngày giỗ: bốn dòng bút bi, dòng cuối bị gạch và viết đè. */
+export function gioListUrl(): string {
+  return paintedRect("gioList", 64, 96, (ctx, w, h) => {
+    ctx.fillStyle = "#c98474";
+    ctx.fillRect(0, 0, w, h);
+    speckle(ctx, w, h, 80, "rgba(90,30,20,0.18)", 2);
+    ctx.strokeStyle = "rgba(25,32,70,0.85)";
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 4; i++) {
+      const y = 18 + i * 14;
+      ctx.beginPath();
+      ctx.moveTo(6, y);
+      for (let x = 6; x < w - 8; x += 4) ctx.lineTo(x, y + Math.sin(x * 0.9 + i) * 1.4);
+      ctx.stroke();
+    }
+    // Dòng giỗ ông: gạch ngang mạnh tay, viết lại bên dưới.
+    ctx.strokeStyle = "rgba(20,20,40,0.95)";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(30, 60);
+    ctx.lineTo(w - 6, 58);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(110,26,18,0.9)";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(8, 78);
+    for (let x = 8; x < w - 10; x += 4) ctx.lineTo(x, 78 + Math.sin(x * 1.3) * 1.8);
+    ctx.stroke();
+    // Đinh ghim.
+    ctx.fillStyle = "#d8c47a";
+    ctx.beginPath();
+    ctx.arc(w / 2, 5, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
 /** Vòng hoa tang: hoa trắng vàng, băng đen chữ "Vô cùng thương tiếc". Có alpha. */
 export function wreathUrl(): string {
   return paintedRect("wreath", 256, 320, (ctx, w, h) => {

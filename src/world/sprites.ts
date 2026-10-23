@@ -1,4 +1,4 @@
-import { Color3, DynamicTexture, Material, Matrix, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode } from "@babylonjs/core";
+import { Color3, DynamicTexture, Material, Matrix, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode } from "../babylon";
 
 /**
  * Sprite nhân vật cắt từ ảnh concept (đã tách nền bằng rembg — xem README): con ma.

@@ -1,4 +1,4 @@
-import { Color3, HemisphericLight, Mesh, MeshBuilder, PointLight, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, HemisphericLight, Mesh, MeshBuilder, PointLight, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "../babylon";
 import type { Game } from "../core/Game";
 import { makeInteractable } from "../interaction/Interaction";
 import type { House } from "./House";

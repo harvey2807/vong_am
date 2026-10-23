@@ -1,4 +1,4 @@
-import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "../babylon";
 import type { Game } from "../core/Game";
 import { diff } from "../core/difficulty";
 import { sackFaceUrl, strawUrl } from "../world/decorTextures";

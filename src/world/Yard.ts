@@ -1,4 +1,4 @@
-import { Color3, DirectionalLight, Mesh, MeshBuilder, PointLight, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, DirectionalLight, Mesh, MeshBuilder, PointLight, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "../babylon";
 import { buildPaperDoll, type PaperDoll } from "../entity/Effigy";
 import type { Game } from "../core/Game";
 import { makeInteractable } from "../interaction/Interaction";
@@ -85,7 +85,16 @@ export class Yard {
 
     const brick = this.house.surface("fence", 6, 1.2, new Color3(0.7, 0.72, 0.65));
     const brickShort = this.house.surface("fence", 2, 1.2, new Color3(0.7, 0.72, 0.65));
-    this.add(this.house.box("fence", 0.25, 2.2, 12.4, new Vector3(13.3, 1.1, -3), brick));
+    // Rào đông: từ Đêm 2 có cổng sau (z −4.7..−3.5) ra khoảng đất sau vườn (xem Backland).
+    const n = this.house.night;
+    if (n >= 2 && n !== 2.5 && !this.house.past) {
+      this.add(this.house.box("fence", 0.25, 2.2, 4.45, new Vector3(13.3, 1.1, -6.925), this.house.surface("fence", 2.2, 1.2, new Color3(0.7, 0.72, 0.65))));
+      this.add(this.house.box("fence", 0.25, 2.2, 6.65, new Vector3(13.3, 1.1, -0.175), this.house.surface("fence", 3.3, 1.2, new Color3(0.7, 0.72, 0.65))));
+      this.add(this.house.box("gatePost", 0.3, 2.4, 0.3, new Vector3(13.3, 1.2, -4.75), this.house.mat("wellWood", undefined, 1, 1, new Color3(0.2, 0.13, 0.08))));
+      this.add(this.house.box("gatePost", 0.3, 2.4, 0.3, new Vector3(13.3, 1.2, -3.45), this.house.mat("wellWood", undefined, 1, 1, new Color3(0.2, 0.13, 0.08))));
+    } else {
+      this.add(this.house.box("fence", 0.25, 2.2, 12.4, new Vector3(13.3, 1.1, -3), brick));
+    }
     this.add(this.house.box("fence", 7.4, 2.2, 0.25, new Vector3(9.7, 1.1, -9.15), brick));
     this.add(this.house.box("fence", 7.4, 2.2, 0.25, new Vector3(9.7, 1.1, 3.15), brick));
     this.add(this.house.box("fence", 0.25, 2.2, 3.2, new Vector3(6.05, 1.1, -7.6), brickShort));
@@ -223,17 +232,10 @@ export class Yard {
     mound.material = this.house.surface("mud", 1, 1, new Color3(0.45, 0.4, 0.35));
     this.add(mound, false);
     mound.isPickable = true;
+    // (Mảnh chén thứ hai giờ nằm trong bát nhang trên mộ ông, khu mộ sau vườn — xem Backland.)
     makeInteractable(mound, {
-      prompt: () => (this.director.has("shard_banana") ? null : this.director.has("read_uncle_note") ? "Bới đất dưới gốc chuối" : "Ụ đất"),
-      interact: () => {
-        if (!this.director.has("read_uncle_note")) {
-          this.game.hud.subtitle("Đất mới xới. Ai bới chỗ này?", 3);
-          return;
-        }
-        this.game.audio.play("dig", mound.position);
-        mound.scaling.y = 0.08;
-        this.house.collect("banana", "Mảnh thứ hai. Đất dưới gốc chuối lạnh ngắt, như vừa có ai đứng đây.");
-      },
+      prompt: () => "Ụ đất",
+      interact: () => this.game.hud.subtitle("Đất mới xới. Chỉ là mấy luống khoai lang bà trồng dở.\nBà trồng cho ai ăn, khi nhà chỉ còn mình bà?", 4.5),
     });
   }
 

@@ -1,5 +1,8 @@
-import type { Vector3 } from "@babylonjs/core";
+import type { Vector3 } from "../babylon";
 import type { SoundId } from "../director/types";
+
+/** Mặt đất dưới chân — quyết định tiếng bước. */
+export type Surface = "tile" | "concrete" | "mud" | "dirt" | "water" | "wood" | "paper";
 
 /**
  * Toàn bộ âm thanh của prototype được tổng hợp bằng Web Audio, không cần file asset.
@@ -23,6 +26,7 @@ export class AudioSystem {
   private rainFilter?: BiquadFilterNode;
   private rainGain?: GainNode;
   private volume = 0.9;
+  private muted = false;
 
   /** Phải gọi trong một thao tác của người dùng (click) vì trình duyệt chặn âm thanh tự phát. */
   init(): void {
@@ -33,7 +37,7 @@ export class AudioSystem {
     const ctx = new AudioContext();
     this.ctx = ctx;
     this.master = ctx.createGain();
-    this.master.gain.value = this.volume;
+    this.master.gain.value = this.muted ? 0 : this.volume;
     this.master.connect(ctx.destination);
     this.music = ctx.createGain();
     this.music.gain.value = this.musicVolume;
@@ -43,6 +47,11 @@ export class AudioSystem {
     this.sfx.connect(this.master);
     this.noise = this.makeNoise(2, false);
     this.startAmbient();
+    // Tab bị ẩn (chuyển tab, thu nhỏ): ngắt hẳn âm thanh thay vì để drone kêu sau lưng người chơi.
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) void ctx.suspend();
+      else void ctx.resume();
+    });
   }
 
   updateListener(pos: Vector3, forward: Vector3): void {
@@ -87,12 +96,89 @@ export class AudioSystem {
       case "rustle": return this.rustle(out, t);
       case "whoosh": return this.whoosh(out, t);
       case "thunder": return this.thunder(out, t);
+      case "gecko": return this.gecko(out, t);
+      case "dog": return this.dogHowl(out, t);
+      case "motorbike": return this.motorbike(t, pos);
+      case "buzz": return this.buzz(out, t);
+      case "unlock": return this.unlock(out, t);
+      case "tick": return this.clickAt(out, t, 3200, 0.22);
     }
+  }
+
+  /** Tiếng bước chân của người chơi theo mặt đất. */
+  footstep(surface: Surface, pos?: Vector3): void {
+    if (!this.ctx) return;
+    const out = pos ? this.panner(pos) : this.sfx;
+    const t = this.ctx.currentTime + 0.01;
+    switch (surface) {
+      case "tile":
+        // Gạch bông: gót chạm gạch nghe gọn, có chút "tách" cao.
+        this.step(out, t, 520, 0.45);
+        this.clickAt(out, t + 0.005, 2600 + Math.random() * 600, 0.05);
+        return;
+      case "concrete":
+        // Xi măng ướt: bước + tiếng nước bắn nhỏ.
+        this.step(out, t, 420, 0.45);
+        this.burstAt(out, t + 0.02, 0.12, 2800, 0.25);
+        return;
+      case "mud":
+        // Bùn: trầm, nhão, rút chân ra kêu "chẹp".
+        this.step(out, t, 220, 0.6);
+        this.burstAt(out, t + 0.11, 0.09, 700, 0.35);
+        return;
+      case "dirt":
+        this.step(out, t, 340, 0.45);
+        this.burstAt(out, t + 0.01, 0.08, 1600, 0.18);
+        return;
+      case "water":
+        this.splash(out, t);
+        return;
+      case "wood":
+        // Ván gỗ gác: tiếng rỗng, trầm; thỉnh thoảng một tấm ván kêu cót két dưới chân.
+        this.step(out, t, 360, 0.55);
+        this.clickAt(out, t + 0.01, 700 + Math.random() * 200, 0.12);
+        if (Math.random() < 0.18) this.boardCreak(out, t + 0.05);
+        return;
+      case "paper":
+        // Không có tiếng gót chạm đất — chỉ giấy cọ vào giấy.
+        this.burstAt(out, t, 0.12, 4200, 0.1);
+        this.burstAt(out, t + 0.06, 0.09, 5400, 0.07);
+        return;
+    }
+  }
+
+  /** Một tấm ván cũ võng xuống: tiếng kẽo kẹt ngắn, cao độ ngẫu nhiên. */
+  private boardCreak(out: AudioNode, t: number): void {
+    const ctx = this.ctx!;
+    const o = ctx.createOscillator();
+    o.type = "sawtooth";
+    const f = 190 + Math.random() * 120;
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.linearRampToValueAtTime(f * (1.2 + Math.random() * 0.4), t + 0.25);
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 1100;
+    bp.Q.value = 5;
+    const g = ctx.createGain();
+    this.envelope(g.gain, t, 0.04, 0.18, 0.3);
+    o.connect(bp).connect(g).connect(out);
+    o.start(t);
+    o.stop(t + 0.4);
   }
 
   setVolume(v: number): void {
     this.volume = v;
-    if (this.ctx) this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+    if (this.ctx && !this.muted) this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+  }
+
+  get isMuted(): boolean {
+    return this.muted;
+  }
+
+  /** Tắt/bật tiếng nhanh (phím M) — không đổi mức âm lượng đã chỉnh. */
+  setMuted(m: boolean): void {
+    this.muted = m;
+    if (this.ctx) this.master.gain.setTargetAtTime(m ? 0 : this.volume, this.ctx.currentTime, 0.03);
   }
 
   setMusicVolume(v: number): void {
@@ -349,14 +435,14 @@ export class AudioSystem {
     src.stop(t + 0.08);
   }
 
-  private step(out: AudioNode, t: number): void {
+  private step(out: AudioNode, t: number, cutoff = 280, level = 0.5): void {
     const ctx = this.ctx!;
     const src = this.noiseSource();
     const lp = ctx.createBiquadFilter();
     lp.type = "lowpass";
-    lp.frequency.value = 280 + Math.random() * 120;
+    lp.frequency.value = cutoff + Math.random() * 120;
     const g = ctx.createGain();
-    this.envelope(g.gain, t, 0.01, 0.5 + Math.random() * 0.2, 0.1);
+    this.envelope(g.gain, t, 0.01, level + Math.random() * 0.2, 0.1);
     src.connect(lp).connect(g).connect(out);
     src.start(t, Math.random());
     src.stop(t + 0.15);
@@ -503,6 +589,164 @@ export class AudioSystem {
     bp.Q.value = 0.7;
     const g = ctx.createGain();
     this.envelope(g.gain, t, 0.01, 0.9, length);
+    src.connect(bp).connect(g).connect(out);
+    src.start(t, Math.random());
+    src.stop(t + length + 0.05);
+  }
+
+  /**
+   * Thạch sùng chặc lưỡi: một chuỗi "tắc tắc tắc" khô, cao, thưa dần.
+   * Người Việt tin thạch sùng kêu đúng lúc ai đó vừa nói là điềm — chuyện vừa nói là thật.
+   */
+  private gecko(out: AudioNode, t: number): void {
+    const ctx = this.ctx!;
+    const n = 4 + Math.floor(Math.random() * 4);
+    let s = t;
+    for (let i = 0; i < n; i++) {
+      const o = ctx.createOscillator();
+      o.type = "square";
+      const f = 2300 + Math.random() * 300 - i * 40;
+      o.frequency.setValueAtTime(f, s);
+      o.frequency.exponentialRampToValueAtTime(f * 0.7, s + 0.03);
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 2600;
+      bp.Q.value = 3;
+      const g = ctx.createGain();
+      this.envelope(g.gain, s, 0.002, 0.22, 0.035);
+      o.connect(bp).connect(g).connect(out);
+      o.start(s);
+      o.stop(s + 0.06);
+      // Hai tiếng đầu sát nhau, sau đó thưa dần.
+      s += 0.11 + i * 0.018 + Math.random() * 0.02;
+    }
+  }
+
+  /** Chó tru xa: tiếng hú trượt cao độ, rung nhẹ, lọc thấp như vọng qua mấy dãy nhà. */
+  private dogHowl(out: AudioNode, t: number): void {
+    const ctx = this.ctx!;
+    const len = 2.2 + Math.random() * 1.2;
+    const base = 420 + Math.random() * 80;
+    const o = ctx.createOscillator();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(base * 0.8, t);
+    o.frequency.linearRampToValueAtTime(base * 1.35, t + 0.5);
+    o.frequency.linearRampToValueAtTime(base * 1.2, t + len * 0.7);
+    o.frequency.exponentialRampToValueAtTime(base * 0.7, t + len);
+    const vib = ctx.createOscillator();
+    vib.frequency.value = 5.5;
+    const vibDepth = ctx.createGain();
+    vibDepth.gain.value = 9;
+    vib.connect(vibDepth).connect(o.frequency);
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 1100;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.16, t + 0.4);
+    g.gain.linearRampToValueAtTime(0.12, t + len * 0.8);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(lp).connect(g).connect(out);
+    o.start(t);
+    vib.start(t);
+    o.stop(t + len + 0.05);
+    vib.stop(t + len + 0.05);
+  }
+
+  /**
+   * Xe máy chạy ngang ngoài đường: máy hai thì rè rè, to dần rồi nhỏ dần, cao độ tụt khi đi qua (Doppler).
+   * Nguồn âm tự chạy ngang trục x, qua điểm `pos`. Đi trên kênh nhạc nền — là tiếng sống, không phải hiệu ứng.
+   */
+  private motorbike(t: number, pos?: Vector3): void {
+    const ctx = this.ctx!;
+    const len = 5.5;
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    const p = ctx.createPanner();
+    p.panningModel = "HRTF";
+    p.distanceModel = "inverse";
+    p.refDistance = 3;
+    p.rolloffFactor = 1;
+    p.positionX.setValueAtTime((pos?.x ?? 0) - dir * 35, t);
+    p.positionX.linearRampToValueAtTime((pos?.x ?? 0) + dir * 35, t + len);
+    p.positionY.value = 0.8;
+    p.positionZ.value = -(pos?.z ?? 0);
+    p.connect(this.music);
+
+    const o = ctx.createOscillator();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(96, t);
+    o.frequency.setValueAtTime(96, t + len * 0.45);
+    o.frequency.linearRampToValueAtTime(78, t + len * 0.6);
+    // Nhịp nổ của máy: biên độ bị một sóng vuông ~32 Hz ngắt quãng.
+    const am = ctx.createOscillator();
+    am.type = "square";
+    am.frequency.value = 32;
+    const amDepth = ctx.createGain();
+    amDepth.gain.value = 0.4;
+    const engine = ctx.createGain();
+    engine.gain.value = 0.6;
+    am.connect(amDepth).connect(engine.gain);
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 900;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.5, t + len * 0.5);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(engine).connect(lp).connect(g).connect(p);
+    o.start(t);
+    am.start(t);
+    o.stop(t + len);
+    am.stop(t + len);
+  }
+
+  /** Điện thoại rung trong túi: hai nhịp ù ù trầm. */
+  private buzz(out: AudioNode, t: number): void {
+    const ctx = this.ctx!;
+    for (const s of [t, t + 0.42]) {
+      const o = ctx.createOscillator();
+      o.type = "square";
+      o.frequency.value = 148;
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 420;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, s);
+      g.gain.linearRampToValueAtTime(0.18, s + 0.02);
+      g.gain.setValueAtTime(0.18, s + 0.24);
+      g.gain.linearRampToValueAtTime(0.0001, s + 0.28);
+      o.connect(lp).connect(g).connect(out);
+      o.start(s);
+      o.stop(s + 0.3);
+    }
+  }
+
+  /** Khóa bật: một tiếng "cạch" kim loại dày, rồi nắp hộp thiếc kêu "bộp". */
+  private unlock(out: AudioNode, t: number): void {
+    const ctx = this.ctx!;
+    this.clickAt(out, t, 1800, 0.6);
+    this.clickAt(out, t + 0.03, 900, 0.5);
+    this.burstAt(out, t + 0.35, 0.18, 1200, 0.5);
+    const o = ctx.createOscillator();
+    o.frequency.setValueAtTime(680, t + 0.35);
+    o.frequency.exponentialRampToValueAtTime(520, t + 0.6);
+    const g = ctx.createGain();
+    this.envelope(g.gain, t + 0.35, 0.004, 0.12, 0.4);
+    o.connect(g).connect(out);
+    o.start(t + 0.35);
+    o.stop(t + 0.8);
+  }
+
+  /** Xung nhiễu lọc dải ở tần số chọn sẵn. */
+  private burstAt(out: AudioNode, t: number, length: number, freq: number, level: number): void {
+    const ctx = this.ctx!;
+    const src = this.noiseSource();
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = freq * (0.85 + Math.random() * 0.3);
+    bp.Q.value = 1.2;
+    const g = ctx.createGain();
+    this.envelope(g.gain, t, 0.006, level, length);
     src.connect(bp).connect(g).connect(out);
     src.start(t, Math.random());
     src.stop(t + length + 0.05);

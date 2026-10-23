@@ -1,8 +1,9 @@
-import { Color3, Mesh, MeshBuilder, Ray, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, MeshBuilder, Ray, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "../babylon";
 import type { Game } from "../core/Game";
 import { bannerUrl, dollFaceUrl, hairUrl, lanternUrl, PALETTES, plainPaperUrl, robeUrl, shoeUrl, type DollFace, type DollKind } from "../world/paperTextures";
 import type { Waypoint } from "./NavGraph";
 import { diff } from "../core/difficulty";
+import { FLOOR1_Y } from "../world/floors";
 
 /** Đèn sáng thì nhích chậm; đèn chập chờn hay tắt thì lao nhanh. Người chơi đi bộ 1.8, chạy 3.3. */
 const SPEED_LIT = 1.2;
@@ -205,11 +206,12 @@ export class Effigies {
     private readonly game: Game,
   ) {}
 
-  spawn(spots: [number, number, number][]): void {
-    spots.forEach(([x, z, yaw], i) => {
+  /** Chỗ đứng (x, z, hướng nhìn độ, độ cao sàn — bỏ trống là nhà dưới, FLOOR1_Y là trên gác). */
+  spawn(spots: ([number, number, number] | [number, number, number, number])[]): void {
+    spots.forEach(([x, z, yaw, y = 0], i) => {
       const doll = buildPaperDoll(this.scene, `effigy${i}`, i % 2 ? "boy" : "girl", i);
       const root = doll.root;
-      root.position.set(x, 0, z);
+      root.position.set(x, y, z);
       root.rotation.y = (yaw * Math.PI) / 180;
       this.dolls.push({ root, body: doll.body, doll, route: [], repath: Math.random() * REPATH_EVERY, rustle: 0 });
     });
@@ -228,7 +230,10 @@ export class Effigies {
   get threat(): number {
     if (!this.active || !this.dolls.length) return 0;
     const cam = this.game.player.camera.position;
-    const nearest = Math.min(...this.dolls.map((d) => Math.hypot(d.root.position.x - cam.x, d.root.position.z - cam.z)));
+    const floor = this.game.player.floor;
+    const same = this.dolls.filter((d) => this.floorOf(d) === floor);
+    if (!same.length) return 0;
+    const nearest = Math.min(...same.map((d) => Math.hypot(d.root.position.x - cam.x, d.root.position.z - cam.z)));
     return Math.max(0, 1 - nearest / 8);
   }
 
@@ -240,7 +245,7 @@ export class Effigies {
     const cam = player.camera.position;
     for (const d of this.dolls) {
       // Trốn trong tủ thì chúng mất dấu và đứng im.
-      if (player.hidden || this.isSeen(d)) continue;
+      if (player.hidden || this.floorOf(d) !== player.floor || this.isSeen(d)) continue;
       const pos = d.root.position;
       const dist = Math.hypot(pos.x - cam.x, pos.z - cam.z);
       if (dist < GRAB_DISTANCE) return this.grab(d);
@@ -249,7 +254,9 @@ export class Effigies {
       d.repath -= dt;
       if (d.repath <= 0 || !d.route.length) {
         d.repath = REPATH_EVERY;
-        d.route = this.game.house.nav.route(flat(pos), flat(cam), (a, b) => this.clear(a, b));
+        // Trên gác là khoảng trống liền — đi thẳng; nhà dưới thì theo điểm dẫn đường.
+        const up = this.floorOf(d) === 1;
+        d.route = up ? [{ pos: flat(cam) }] : this.game.house.nav.route(flat(pos), flat(cam), (a, b) => this.clear(a, b, pos.y));
       }
       const wp = d.route[0];
       if (!wp) continue;
@@ -265,7 +272,7 @@ export class Effigies {
       d.rustle -= step;
       if (d.rustle <= 0) {
         d.rustle = RUSTLE_EVERY;
-        this.game.audio.play("rustle", new Vector3(pos.x, 1, pos.z));
+        this.game.audio.play("rustle", new Vector3(pos.x, pos.y + 1, pos.z));
       }
     }
   }
@@ -280,8 +287,12 @@ export class Effigies {
     return this.ray(cam.position, head);
   }
 
-  private clear(a: Vector3, b: Vector3): boolean {
-    return this.ray(new Vector3(a.x, 1.0, a.z), new Vector3(b.x, 1.0, b.z));
+  private clear(a: Vector3, b: Vector3, base = 0): boolean {
+    return this.ray(new Vector3(a.x, base + 1.0, a.z), new Vector3(b.x, base + 1.0, b.z));
+  }
+
+  private floorOf(d: Doll): 0 | 1 {
+    return d.root.position.y > FLOOR1_Y / 2 ? 1 : 0;
   }
 
   private ray(a: Vector3, b: Vector3): boolean {

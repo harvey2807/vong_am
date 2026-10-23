@@ -1,7 +1,9 @@
 export type SoundId =
   | "knock" | "whisper" | "sting" | "creak" | "rattle" | "click" | "step"
-  | "heavyStep" | "breath" | "shriek" | "dig" | "splash" | "static" | "rustle" | "whoosh" | "thunder";
-export type LightState = "on" | "off" | "flicker" | "blackout";
+  | "heavyStep" | "breath" | "shriek" | "dig" | "splash" | "static" | "rustle" | "whoosh" | "thunder"
+  | "gecko" | "dog" | "motorbike" | "buzz" | "unlock" | "tick";
+/** `stutter`: chỉ bóng đèn vốn hay chập chờn (bếp) giật vài nhịp — không ai để ý, trừ người chơi. */
+export type LightState = "on" | "off" | "flicker" | "blackout" | "stutter";
 /**
  * appear: đứng yên tại anchor · patrol: đi săn · alert: lao tới chỗ người chơi · grab: bắt ngay · vanish: biến mất
  * disguise: khoác hình dạng của Út (áo sơ mi trắng, tóc ngắn, mặt người) — đêm cuối.
@@ -26,6 +28,8 @@ export interface Condition {
   /** Người chơi đang ở gần anchor này (trong `nearRadius` mét, mặc định 3) — dùng cho bản đồ ngoài trời. */
   near?: string;
   nearRadius?: number;
+  /** Người chơi đang ở tầng này: 0 nhà dưới / ngoài trời, 1 trên gác kho đồ mã. */
+  floor?: 0 | 1;
 }
 
 export type Action =
@@ -38,8 +42,20 @@ export type Action =
   | { type: "lights"; state: LightState }
   | { type: "tension"; add: number }
   | { type: "entity"; do: EntityCommand; at?: string }
-  /** `glitch`: dòng nhiệm vụ bị "chiếm" — chớp hiện câu khác trong nửa giây rồi mới hiện câu thật. */
-  | { type: "objective"; text: string; glitch?: string }
+  /**
+   * `glitch`: dòng nhiệm vụ bị "chiếm" — chớp hiện câu khác trong nửa giây rồi mới hiện câu thật.
+   * `hints`: gợi ý từng bậc cho việc này, người chơi mở dần trong sổ tay (H). Bậc cuối nên nói thẳng đáp án.
+   */
+  | { type: "objective"; text: string; glitch?: string; hints?: string[] }
+  /** Tin nhắn tới điện thoại (rung + thông báo). `eerie`: tin không thể có (người đã mất, chính số của mình). */
+  | { type: "message"; from: string; text: string; eerie?: boolean }
+  /** Tắt mọi tiếng sống (thạch sùng, chó, xe máy) trong `seconds` giây — sự im lặng có chủ đích. */
+  | { type: "hush"; seconds: number }
+  /**
+   * Một thay đổi có tên của thế giới, do khu vực tự diễn (vd. `shopDollsLook` — ba hình nhân trong tiệm quay về phía
+   * người chơi; `atticChildGone`; `pondRipple`). Xem `beat()` trong PhucKy.ts, Backland.ts.
+   */
+  | { type: "beat"; name: string }
   /** Đóng/mở một cánh cửa (vd. cửa phòng bà tự đóng sầm sau lưng). */
   | { type: "door"; door: string; open: boolean }
   /** Hiện/ẩn một vật có tên trong targets (vd. gương mặt sau cửa sổ). */
@@ -70,7 +86,11 @@ export interface DirectorContext {
   setPhoto(variant: number): void;
   setLights(state: LightState): void;
   entity(cmd: EntityCommand, at?: string): void;
-  objective(text: string, glitch?: string): void;
+  objective(text: string, glitch?: string, hints?: string[]): void;
+  message(from: string, text: string, eerie?: boolean): void;
+  hush(seconds: number): void;
+  beat(name: string): void;
+  playerFloor(): 0 | 1;
   door(name: string, open: boolean): void;
   show(target: string, visible: boolean): void;
   scarecrowRage(seconds: number): void;

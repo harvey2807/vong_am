@@ -1,0 +1,133 @@
+/* =====================================================================
+   Sổ tay, khóa số, tin nhắn, cảnh báo, gán phím — các hệ thống thêm sau prototype.
+   Cùng bảng màu với style.css: gỗ sẫm, đồng thau ngả vàng, chữ ngà. Điện thoại là bề mặt "hiện đại"
+   duy nhất trong game — cố ý rẻ tiền, màn hình hơi nứt.
+   ===================================================================== */
+.obj-journal { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.08em; color: var(--ivory-3); margin-top: 2px; }
+.obj-journal kbd { font-size: 9px; padding: 0 0.35em; }
+#objective.stale .obj-journal { opacity: 0; }
+
+/* ---------------------------------------------------------------- khóa số */
+#lock { background: radial-gradient(ellipse at center, rgba(4, 6, 6, 0.55), rgba(4, 6, 6, 0.94)); gap: var(--s3); z-index: 20; }
+.lock { position: relative; width: min(460px, 92vw); padding: var(--s5) var(--s5) var(--s4); text-align: center;
+  background: radial-gradient(ellipse at 30% 0%, rgba(195, 149, 85, 0.12), transparent 60%), linear-gradient(180deg, #2a1a10, #170d07);
+  border: 1px solid var(--amber-dim); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(228, 218, 198, 0.08);
+  animation: paper-in 0.45s var(--ease); }
+.lock h2 { font-family: var(--font-title); font-weight: 500; font-size: 28px; letter-spacing: 0.06em; color: var(--ivory); }
+.lock-sub { font-family: var(--font-body); font-style: italic; font-size: 15px; color: var(--ivory-2); margin: 6px 0 var(--s4); line-height: 1.5; }
+.dials { display: flex; justify-content: center; gap: 10px; }
+.dial { display: flex; flex-direction: column; align-items: center; width: 56px; padding: 4px 0; cursor: pointer; border-radius: 3px;
+  background: linear-gradient(90deg, #5e4520, #b38d4a 30%, #d8b56e 50%, #a17d3c 70%, #4e3818);
+  box-shadow: inset 0 6px 8px rgba(0, 0, 0, 0.55), inset 0 -6px 8px rgba(0, 0, 0, 0.55), 0 2px 0 #0b0603;
+  font-family: var(--font-ui); font-variant-numeric: tabular-nums; color: #1d1206; outline: 2px solid transparent; outline-offset: 3px;
+  transition: outline-color 0.15s; }
+.dial .cur { font-size: 34px; font-weight: 600; line-height: 1.15; text-shadow: 0 1px 0 rgba(255, 230, 180, 0.4); }
+.dial .side { font-size: 15px; line-height: 1.2; opacity: 0.45; }
+.dial.sel { outline-color: var(--amber); }
+.lock-msg { min-height: 3.2em; margin-top: var(--s4); font-family: var(--font-body); font-size: 15px; line-height: 1.55; color: var(--ivory-2); white-space: pre-line; }
+.lock.open { border-color: var(--amber); box-shadow: 0 0 40px var(--amber-glow), 0 24px 60px rgba(0, 0, 0, 0.8); }
+.lock.open .dial { outline-color: transparent; filter: brightness(1.15); }
+.lock.shake { animation: lock-shake 0.35s steps(6); }
+@keyframes lock-shake { 25% { transform: translateX(-5px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+
+/* ---------------------------------------------------------------- sổ tay */
+#journal { background: radial-gradient(ellipse at center, rgba(4, 6, 6, 0.6), rgba(4, 6, 6, 0.95)); gap: var(--s3); z-index: 20; }
+.journal { width: min(620px, 94vw); height: min(540px, 72vh); display: flex; flex-direction: column; text-align: left;
+  background: var(--grain), linear-gradient(180deg, #1d140d, #120c08); border: 1px solid var(--line-strong);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8); animation: paper-in 0.4s var(--ease); }
+.j-tabs { display: flex; border-bottom: 1px solid var(--line); }
+.j-tabs button { flex: 1; padding: 12px 8px; background: none; border: none; cursor: pointer; font-family: var(--font-ui); font-size: 13px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ivory-3); border-bottom: 2px solid transparent; }
+.j-tabs button.on { color: var(--ivory); border-bottom-color: var(--amber); }
+.j-body { flex: 1; overflow-y: auto; padding: var(--s4) var(--s5); display: flex; flex-direction: column; gap: 6px; }
+.j-label { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--amber-dim); margin-top: var(--s3); }
+.j-label:first-child { margin-top: 0; }
+.j-objective { font-family: var(--font-body); font-size: 19px; line-height: 1.5; color: var(--ivory); }
+.j-hints { display: flex; flex-direction: column; gap: 4px; }
+.j-hint { font-family: var(--font-hand); font-size: 19px; line-height: 1.4; color: #d9c7a0; }
+body.print-notes .j-hint { font-family: var(--font-body); font-size: 15px; }
+.j-hint-more, .j-empty { font-family: var(--font-ui); font-size: 13px; color: var(--ivory-3); font-style: italic; }
+.j-item { display: grid; grid-template-columns: minmax(150px, 40%) 1fr; gap: var(--s3); padding: 6px 0; border-bottom: 1px solid var(--line);
+  font-family: var(--font-ui); font-size: 13px; color: var(--ivory-2); }
+.j-item b { font-weight: 500; color: var(--ivory); }
+.j-paper { text-align: left; background: none; border: 1px solid transparent; border-left: 2px solid var(--line); color: var(--ivory-2); cursor: pointer;
+  padding: 8px 12px; font-family: var(--font-hand); font-size: 21px; }
+.j-paper.sel, .j-paper:hover { color: var(--ivory); border-left-color: var(--amber); background: rgba(195, 149, 85, 0.06); }
+body.print-notes .j-paper { font-family: var(--font-body); font-size: 16px; }
+
+/* ---------------------------------------------------------------- điện thoại */
+.j-body[data-tab="2"] { padding: var(--s3); align-items: center; }
+.phone { position: relative; width: min(360px, 100%); height: 100%; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden;
+  background: #0d1316; border: 7px solid #050708; box-shadow: 0 0 0 1px #2a3236, inset 0 0 30px rgba(0, 0, 0, 0.6); }
+/* Vết nứt màn hình: hai đường mảnh chéo góc. */
+.phone::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.35;
+  background: linear-gradient(118deg, transparent 61%, rgba(220, 230, 235, 0.5) 61.2%, transparent 61.5%),
+    linear-gradient(142deg, transparent 66%, rgba(220, 230, 235, 0.35) 66.15%, transparent 66.4%); }
+.phone-head { padding: 12px 14px; font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: #dfe9ee; background: #1e5fae; }
+.phone-thread { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; background: #c9d6dd; }
+.bubble { max-width: 84%; align-self: flex-start; padding: 7px 10px; border-radius: 10px; background: #fff; color: #1a1d1f;
+  font-family: var(--font-ui); font-size: 13px; line-height: 1.45; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12); }
+.bubble.self { align-self: flex-end; background: #d6e9ff; }
+.bubble-from { display: block; font-size: 11px; font-weight: 600; color: #8a5a12; margin-bottom: 2px; }
+.bubble.eerie { background: #f1e3df; color: #4a0d08; }
+.bubble.eerie .bubble-from { color: var(--crimson-2); }
+
+/* ---------------------------------------------------------------- thông báo tin nhắn */
+#toast { position: fixed; top: 18px; right: 18px; z-index: 35; width: min(320px, 80vw); display: grid; gap: 2px; padding: 10px 14px;
+  background: rgba(22, 28, 31, 0.94); border-left: 3px solid #1e5fae; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-ui); color: var(--ivory); pointer-events: none; animation: rise 0.4s var(--ease); transition: opacity 0.8s; }
+#toast.out { opacity: 0; }
+#toast.eerie { border-left-color: var(--crimson-2); }
+#toast.system { border-left-color: var(--amber-dim); background: rgba(20, 14, 9, 0.94); }
+.toast-app { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivory-3); }
+.toast-from { font-size: 13px; }
+.toast-text { font-size: 13px; color: var(--ivory-2); }
+
+/* ---------------------------------------------------------------- cảnh báo, gán phím */
+#warning { background: radial-gradient(ellipse at center, #120c0a 0%, var(--ink-0) 75%); z-index: 30; }
+.warning-panel p { font-family: var(--font-body); font-size: 15px; line-height: 1.65; color: var(--ivory-2); margin-bottom: var(--s3); }
+.warning-panel .warning-note { font-size: 13px; font-style: italic; color: var(--ivory-3); }
+.panel-section { font-family: var(--font-title); font-weight: 500; font-size: 20px; letter-spacing: 0.06em; color: var(--ivory); margin: var(--s4) 0 var(--s2); }
+.keybinds { display: flex; flex-direction: column; gap: 6px; }
+/* .setting.keybind: tệp này được @import trước style.css nên cần độ ưu tiên cao hơn .setting. */
+.setting.keybind { grid-template-columns: 1fr 140px; }
+.bind { font-family: var(--font-ui); font-size: 13px; color: var(--ivory); background: rgba(10, 15, 16, 0.7); border: 1px solid var(--line-strong);
+  border-bottom-width: 2px; border-radius: 3px; padding: 5px 10px; cursor: pointer; min-width: 90px; }
+.bind:hover, .bind:focus-visible { border-color: var(--amber-dim); outline: none; }
+.bind.listening { border-color: var(--amber); color: var(--amber); animation: pulse 1.2s ease-in-out infinite; }
+.bind-reset { align-self: flex-start; margin-top: var(--s2); padding: 7px 18px; font-size: 13px; }
+#reader-body s { text-decoration-thickness: 2px; text-decoration-color: rgba(30, 20, 10, 0.75); opacity: 0.7; }
+
+/* Giấy hồng điều: giấy đỏ hồng bạc màu, mực bút bi xanh — tờ ghi ngày giỗ ghim cạnh bàn thờ. */
+.paper[data-paper="hongdieu"] { --ink: #1c2442; }
+.paper[data-paper="hongdieu"] .paper-sheet { background: var(--grain), radial-gradient(ellipse at 70% 20%, rgba(255, 240, 220, 0.25), transparent 50%),
+  linear-gradient(180deg, #d79a8a, #c4806f); }
+/* Bản rập bia đá: nền xám đá lốm đốm, chữ khắc in đậm (phông thân chữ, căn giữa). */
+.paper[data-paper="stone"] { --ink: #1d1e1c; }
+.paper[data-paper="stone"] .paper-sheet { filter: url(#paper-edge); background: var(--grain),
+  radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.12), transparent 50%), linear-gradient(180deg, #a9aaa3, #8e8f88); }
+.paper[data-paper="stone"] #reader-body { font-family: var(--font-body); font-size: 18px; text-align: center; letter-spacing: 0.04em; }
+.paper[data-paper="stone"] h2 { font-family: var(--font-title); }
+
+/* Tờ lịch bloc: giấy trắng mỏng, chữ in đỏ — dùng phông thân chữ (chữ in), không phải chữ viết tay. */
+.paper[data-paper="calendar"] { --ink: #2a2018; }
+.paper[data-paper="calendar"] .paper-sheet { filter: none; background: var(--grain), linear-gradient(180deg, #8a1c14 0 46px, #ece6d6 46px); }
+.paper[data-paper="calendar"] h2 { color: #f1e6c8; font-family: var(--font-ui); font-size: 15px; letter-spacing: 0.2em; margin-top: -24px; }
+.paper[data-paper="calendar"] #reader-body { font-family: var(--font-body); font-size: 17px; text-align: center; }
+/* Dòng đầu là số ngày: to, đỏ, đậm như tờ lịch bloc thật. */
+.paper[data-paper="calendar"] #reader-body::first-line { font-size: 72px; line-height: 1.1; font-weight: 600; color: #a3201a; }
+
+/* Phụ đề xuống sát đáy khi đang mở khóa số / sổ tay (giống lúc đọc giấy) để không che dòng phím. */
+body:has(#lock:not(.hidden)) #subtitle, body:has(#journal:not(.hidden)) #subtitle { bottom: 1.5%; }
+
+/* ---------------------------------------------------------------- giảm chớp & rung (cài đặt trong game) */
+body.calm .title, body.calm .glitch::before, body.calm .glitch::after, body.calm #ending.play h1,
+body.calm .menu-item:hover::before, body.calm .ui-flicker, body.calm .lock.shake, body.calm .bind.listening { animation: none !important; }
+body.calm .paper { transform: none; animation: none; }
+body.calm #reader-body .late.written { animation: none; clip-path: none; }
+
+@media (max-width: 640px) {
+  .j-body { padding: var(--s3); }
+  .j-item { grid-template-columns: 1fr; gap: 2px; }
+  .dial { width: 48px; }
+}

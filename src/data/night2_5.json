@@ -7,7 +7,7 @@
       { "type": "subtitle", "text": "Đầu làng. Trời vừa sập tối mà đồng đã đen kịt.", "duration": 4 },
       { "type": "wait", "seconds": 4.5 },
       { "type": "subtitle", "text": "Cuối bờ ruộng kia là gốc đa — có ngọn đèn đỏ dưới gốc.", "duration": 4 },
-      { "type": "objective", "text": "Ra gốc đa đầu làng tìm chú Tư — đi theo bờ ruộng" }
+      { "type": "objective", "text": "Ra gốc đa đầu làng tìm chú Tư — đi theo bờ ruộng", "hints": ["Ngọn đèn đỏ treo trên cành đa là hướng cần tới. Đi trên bờ ruộng thì nhanh hơn lội nước."] }
     ]
   },
   {
@@ -19,7 +19,7 @@
       { "type": "wait", "seconds": 5 },
       { "type": "subtitle", "text": "Hồi nhỏ bà hay dọa: đèn soi tới đâu, bù nhìn thức tới đó.", "duration": 4.5 },
       { "type": "setFlag", "flag": "field_rule" },
-      { "type": "objective", "text": "Ra gốc đa. Qua đồng thì tắt đèn pin (F) — đi theo đom đóm" }
+      { "type": "objective", "text": "Ra gốc đa. Qua đồng thì tắt đèn pin ({flashlight}) — đi theo đom đóm", "hints": ["Bù nhìn chỉ thức khi có ánh đèn pin. Tắt đèn ({flashlight}) là chúng đứng im.", "Con nào đang bị rọi thẳng thì không nhúc nhích — lỡ bật đèn thì rọi vào con gần nhất.", "Giọng gọi dưới ruộng không phải mẹ. Đừng trả lời."] }
     ]
   },
   {
@@ -54,7 +54,9 @@
     "when": { "all": ["field_rule"], "none": ["ending", "caught"], "delay": 72 },
     "actions": [
       { "type": "sound", "sound": "whisper", "at": "uncle" },
-      { "type": "subtitle", "text": "“…Bốn.”", "duration": 2.5, "voice": true, "glitch": "“…Út.”" }
+      { "type": "subtitle", "text": "“…Bốn.”", "duration": 2.5, "voice": true, "glitch": "“…Út.”" },
+      { "type": "wait", "seconds": 3 },
+      { "type": "message", "from": "Chú Tư", "text": "đếm tới năm là chú quay lại", "eerie": true }
     ]
   },
   {
@@ -85,7 +87,7 @@
       { "type": "tension", "add": 0.4 },
       { "type": "subtitle", "text": "Khắp đồng, tiếng rơm sột soạt. Tất cả bù nhìn đều quay đầu lại.", "duration": 4 },
       { "type": "scarecrows", "do": "rage", "seconds": 12 },
-      { "type": "objective", "text": "Chạy ra gốc đa — tới bãi đất là chúng không theo nữa", "glitch": "Xuống ruộng với mẹ" }
+      { "type": "objective", "text": "Chạy ra gốc đa — tới bãi đất là chúng không theo nữa", "glitch": "Xuống ruộng với mẹ", "hints": ["Chạy theo hướng đèn đỏ. Bãi đất quanh gốc đa là đất thờ, bù nhìn không vào được."] }
     ]
   },
   {

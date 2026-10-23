@@ -5,8 +5,9 @@
  *
  * Thỉnh thoảng có "điều gì đó" sau cánh cửa: một cái bóng đi ngang làm tối khe sáng, cánh cửa khẽ rung
  * như có người gõ, hoặc — hiếm — một gương mặt trắng nhìn ra qua khe cửa. Tắt hết khi người dùng chọn
- * giảm chuyển động (prefers-reduced-motion).
+ * giảm chuyển động (prefers-reduced-motion, hoặc "Giảm chớp & rung" trong Cài đặt).
  */
+import { comfort } from "../core/Settings";
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -32,7 +33,10 @@ const rgba = (c: readonly number[], a: number) => `rgba(${c[0]},${c[1]},${c[2]},
 
 export class MenuBackground {
   private readonly ctx: Ctx;
-  private readonly reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /** Giảm chớp & rung (mặc định theo hệ điều hành, đổi được trong Cài đặt): không sét, không sự kiện sau cánh cửa. */
+  private get reduceMotion(): boolean {
+    return comfort.calm;
+  }
   private stat?: HTMLCanvasElement;
   private leaf?: HTMLCanvasElement;
   private grain: CanvasPattern[] = [];

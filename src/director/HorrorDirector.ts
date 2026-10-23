@@ -52,6 +52,7 @@ export class HorrorDirector {
       if (ev.when.look && !this.ctx.isLookedAt(ev.when.look)) continue;
       if (ev.when.visible && !this.ctx.isVisible(ev.when.visible)) continue;
       if (ev.when.near && !this.ctx.isNear(ev.when.near, ev.when.nearRadius ?? 3)) continue;
+      if (ev.when.floor !== undefined && this.ctx.playerFloor() !== ev.when.floor) continue;
 
       this.fired.add(ev.id);
       this.onLog?.("event", ev.id);
@@ -103,7 +104,16 @@ export class HorrorDirector {
         this.ctx.entity(a.do, a.at);
         break;
       case "objective":
-        this.ctx.objective(a.text, a.glitch);
+        this.ctx.objective(a.text, a.glitch, a.hints);
+        break;
+      case "message":
+        this.ctx.message(a.from, a.text, a.eerie);
+        break;
+      case "hush":
+        this.ctx.hush(a.seconds);
+        break;
+      case "beat":
+        this.ctx.beat(a.name);
         break;
       case "door":
         this.ctx.door(a.door, a.open);

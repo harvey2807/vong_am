@@ -12,9 +12,14 @@ npm run dev        # mở http://localhost:5173
 npm run build      # bản build tĩnh trong dist/
 npm run play       # build rồi chạy bản gọn ở http://localhost:4173 (ổn định hơn bản dev)
 npm run package    # build + nén thành vongam-web.zip để upload itch.io
+npm run smoke      # kiểm thử khói: mở cả 6 chương, giải câu đố Đêm 1, sổ tay, đổi phím — dùng Chrome cài sẵn
 ```
 
-Điều khiển: **WASD** di chuyển · **Shift** chạy · **E** tương tác / đóng giấy / ra khỏi tủ · **F** đèn pin · **Esc** tạm dừng.
+Điều khiển (đổi được trong Cài đặt → Phím điều khiển): **WASD** di chuyển · **Shift** chạy · **E** tương tác / đóng giấy /
+ra khỏi tủ · **F** đèn pin · **J** (hoặc Tab) sổ tay & tin nhắn · **H** gợi ý (trong sổ tay) · **M** tắt tiếng · **Esc** tạm dừng.
+
+`npm run smoke` cần Google Chrome (đặt `CHROME_PATH` nếu Chrome không ở chỗ mặc định). Tài liệu thiết kế: [docs/DESIGN.md](docs/DESIGN.md),
+đánh giá kỹ thuật: [docs/AUDIT.md](docs/AUDIT.md), nhật ký sản xuất: [docs/PRODUCTION_LOG.md](docs/PRODUCTION_LOG.md).
 Nên đeo tai nghe: tiếng gọi và tiếng gõ cửa là âm thanh 3D (HRTF).
 
 Chơi liền mạch như một câu chuyện: màn hình chính chỉ có **Bắt đầu / Tiếp tục / Chơi lại từ đầu**. Mỗi đêm mở bằng
@@ -23,6 +28,30 @@ chết thì "Thử lại đêm này". Tiến trình lưu trong trình duyệt. P
 **Hồi tưởng** để chơi lại từng đêm. Thử nhanh một đêm: thêm `?dem=3` vào URL.
 
 
+
+## Đợt sản xuất 2026-10: câu đố, sổ tay, điện thoại, tiếng sống
+
+- **Câu đố hộp bánh quy (Đêm 1).** Chìa khóa phòng bà nằm trong hộp bánh quy bơ (đựng kim chỉ, như mọi nhà), quấn dây
+  khóa xe đạp số. Mã = ngày giỗ ông theo âm lịch, ngày trước tháng sau. Manh mối: trang 2 lời bà dặn, tờ giấy hồng điều
+  ghi ngày giỗ cạnh bàn thờ (chữ "Rằm" bị gạch), lịch bloc dưới bếp (Rằm tháng Bảy = 15/7). Đáp án **1607**. Mã gần
+  đúng có câu phản hồi riêng; sai nhiều thì gợi ý rõ dần. Khóa số: A/D chọn vòng, W/S hoặc cuộn chuột xoay, gõ số trực tiếp, E kéo thử, Q thôi.
+- **Sổ tay (J).** Ba trang: *Việc cần làm* (kèm gợi ý mở từng bậc bằng H — bậc cuối nói thẳng đáp án — và đồ đang mang
+  theo, `data/items.json`), *Giấy tờ* (đọc lại mọi tờ giấy đã đọc trong đêm), *Tin nhắn*.
+- **Điện thoại & nhóm Zalo "Gia đình họ Lâm"** (`data/messages.json`): cô Ba mê tín, dì Năm chuyển tiếp tin dây chuyền,
+  chú Tư cụt lủn, mẹ đi làm ở Đài Loan. Điện thoại là giao diện "an toàn" cho tới khi nó bị chiếm: Zalo của bà đã mất
+  (Đêm 1), chú Tư đếm (Chạng vạng), và một liên lạc tên **Út** — số của chính mình (Đêm cuối). Đêm 2, tin thật của mẹ
+  tới đúng lúc "mẹ" gọi dưới giếng — bằng chứng để không trả lời.
+- **Tiếng sống & sự im lặng** (`audio/Ambience.ts`): thạch sùng chặc lưỡi trong nhà, chó tru xa, xe máy chạy ngang
+  ngoài đường. Khi căn nhà hết yên (gõ cửa, đi săn, mất điện), mọi tiếng sống tắt và đồng hồ quả lắc đứng giữa nhịp;
+  thắp nhang xong thì thạch sùng kêu lại. Tiếng bước chân đổi theo mặt đất: gạch bông, xi măng ướt, bùn, đất, nước.
+- **Cảnh hù mới (Đêm 1):** bóng đèn bếp vốn hay chập chờn (vô hại); đúng một lần, lúc nó giật, ngoài hành lang có người
+  đứng nhìn vào qua khe cửa bếp — không có tiếng hù, chỉ có im lặng và câu tự trấn an.
+- **Dễ chịu & trợ năng:** cảnh báo nội dung lần đầu chơi; *Giảm chớp & rung* (đèn chập chờn dịu đi, không rung camera,
+  không chớp giao diện, không sét ở màn hình chính — mặc định theo `prefers-reduced-motion`); *Thời gian hiện chữ*
+  (phụ đề, lời kể ×1 / ×1,5 / ×2); đổi phím; tắt tiếng nhanh (M); âm thanh tự ngắt khi chuyển tab.
+- **Gói nhẹ hơn:** Babylon nhập theo đường dẫn sâu qua `src/babylon.ts` → gói chính 7,05 MB → 1,70 MB
+  (gzip 1,56 MB → 415 KB); vào màn hình chính nhanh hơn ~45% (đo ở 9 Mbps). Mọi tệp phải nhập Babylon từ `src/babylon.ts`.
+- Sửa cốt truyện: Út tuổi Mậu Dần (không phải Mậu Thìn); lời kết thật khớp với di vật (bà ẵm đứa *biết khóc*).
 
 ## Độ khó & cơ chế sinh tồn
 
@@ -234,6 +263,13 @@ src/
   data/night4.json          ★ Kịch bản đêm cuối
   data/notes.json           ★ Nội dung tờ giấy, sổ tay
   data/knocker.json         ★ Thông số Người Gõ Cửa
+  data/messages.json        ★ Nhóm Zalo gia đình (lịch sử tin nhắn theo từng đêm)
+  data/items.json           ★ Đồ mang theo hiện trong sổ tay (cờ có / cờ đã dùng)
+  babylon.ts                Cửa ngõ duy nhất vào Babylon (nhập sâu + side effect) — đừng nhập thẳng "@babylonjs/core"
+  core/Keybinds.ts          Phím đổi được, tên phím, thay {action} trong chữ kịch bản
+  audio/Ambience.ts         Tiếng sống (thạch sùng, chó, xe máy) — im bặt khi căn nhà hết yên
+  systems.css               Giao diện sổ tay, khóa số, điện thoại, thông báo, cảnh báo, gán phím
+scripts/smoke.mjs           Kiểm thử khói (npm run smoke)
 ```
 
 ### Viết sự kiện mới (`src/data/night1.json`, `night2.json`)
@@ -252,6 +288,10 @@ src/
 ```
 
 - Điều kiện: `all`, `none`, `delay` (giây kể từ khi điều kiện cờ thỏa), `hidden` (mục tiêu ngoài tầm nhìn), `look` (đang nhìn thẳng mục tiêu, ≤ 4 m), `visible` (mục tiêu trong tầm nhìn, mọi khoảng cách).
+- Hành động thêm trong đợt 2026-10: `message` (`from`, `text`, `eerie` — tin nhắn tới điện thoại, rung + thông báo),
+  `hush` (`seconds` — tắt tiếng sống), `objective` có `hints` (mảng gợi ý từng bậc), `lights` có `stutter` (chỉ bóng
+  đèn bếp giật). Âm thanh thêm: `gecko`, `dog`, `motorbike`, `buzz`, `unlock`, `tick`. Chữ trong `subtitle`, `objective`,
+  `hints` có thể dùng `{interact}`, `{flashlight}`, `{journal}`, `{breath}`, `{left}`… — thay bằng phím người chơi đang gán.
 - Hành động: `wait`, `subtitle`, `setFlag`, `sound` (`knock|whisper|sting|creak|rattle|click|step|heavyStep|breath|shriek`, `at` = `behindPlayer` hoặc anchor), `photo`, `lights` (`on|off|flicker|blackout`), `tension`, `ending`,
   `entity` (`do`: `appear|patrol|alert|grab|disguise|vanish`, `at` = anchor), `objective` (dòng nhiệm vụ góc trái), `choice` (hiện [E] `text` trong `seconds` giây, bấm thì bật `flag`),
   `footstepsBehind` (quy tắc 4 → cờ `rule4_broken` / `rule4_kept`), `tv` (`off|static|face`), `effigies` (`wake|sleep`), `ending` có thể kèm `next` (số đêm kế tiếp).
@@ -284,6 +324,10 @@ Cài đặt (độ nhạy chuột, độ sáng, âm lượng) lưu trong trình 
 - [x] Đêm 3 — Hình nhân ("Kẻ Không Có Mặt"), bàn thờ tang chi tiết, texture ảnh thật.
 - [x] Đêm cuối — Người thứ năm: khép lại câu chuyện, cả ba thực thể, ba kết thúc.
 - [x] Chuẩn bị chơi thử: cài đặt, nhật ký chơi thử + 3 câu hỏi cuối đêm, gói zip cho itch.io.
+- [x] Đợt sản xuất 2026-10: câu đố hộp bánh quy, sổ tay + gợi ý, điện thoại/nhóm Zalo, tiếng sống, đổi phím,
+      giảm chớp & rung, cảnh báo nội dung, gói nhẹ hơn ~4 lần, kiểm thử khói.
+- [ ] Nâng cấp câu đố Đêm 2–4 theo `docs/DESIGN.md` §9.2.
+- [ ] Xác nhận quyền dùng các ảnh trong `public/textures/sprites/` (bắt buộc trước khi phát hành công khai).
 - [ ] Đưa link cho 3–5 người chơi thử, gom file nhật ký, chỉnh nhịp độ theo dữ liệu.
 - [ ] Thay âm thanh tổng hợp bằng giọng nói ghi âm thật (quan trọng nhất cho Lớp 2).
 - [ ] Dựng lại nhà trong Blender, xuất glTF, "nướng" ánh sáng.

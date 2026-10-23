@@ -1,4 +1,4 @@
-import { Color3, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "../babylon";
 import { buildPaperDoll } from "../entity/Effigy";
 import { ashUrl, charcoalUrl, clothUrl, cobwebUrl, jossPaperUrl } from "./decorTextures";
 import { drawAltarPortrait, portraitsReady, PORTRAITS } from "./textures";

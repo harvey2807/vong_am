@@ -13,7 +13,7 @@ import {
   Texture,
   TransformNode,
   Vector3,
-} from "@babylonjs/core";
+} from "../babylon";
 import type { Game } from "../core/Game";
 import type { LightState } from "../director/types";
 import type { House } from "./House";

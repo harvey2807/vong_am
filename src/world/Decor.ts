@@ -1,4 +1,4 @@
-import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode, Vector3 } from "../babylon";
 import type { AudioSystem } from "../audio/AudioSystem";
 import type { House } from "./House";
 import {
@@ -25,6 +25,7 @@ export class Decor {
   private fanSpeed = 2.2;
   private pendulum!: TransformNode;
   private tickTimer = 0;
+  private clockTime = 0;
   private net: Mesh[] = [];
   private shafts: StandardMaterial[] = [];
   private time = 0;
@@ -281,19 +282,23 @@ export class Decor {
 
   // ---------------------------------------------------------------- vòng lặp
 
-  update(dt: number, lightsOn: boolean): void {
+  /** `clockStopped`: căn nhà hết yên (gõ cửa, đi săn, mất điện) — quả lắc đứng khựng giữa nhịp, tiếng tích tắc tắt. */
+  update(dt: number, lightsOn: boolean, clockStopped = false): void {
     this.time += dt;
+    if (!clockStopped) this.clockTime += dt;
     // Mất điện thì quạt quay chậm dần rồi đứng hẳn.
     this.fanSpeed = lightsOn ? 2.2 : Math.max(0, this.fanSpeed - dt * 0.35);
     this.fanBlades.rotation.y += this.fanSpeed * dt;
     for (const n of this.net) n.rotation.z = Math.sin(this.time * 0.7 + n.position.x) * 0.01 * (this.fanSpeed / 2.2);
 
     // Đồng hồ quả lắc: tiếng tích tắc nhỏ, chỉ nghe rõ khi đứng gần.
-    this.pendulum.rotation.x = Math.sin(this.time * Math.PI) * 0.22;
-    this.tickTimer -= dt;
-    if (this.tickTimer <= 0) {
-      this.tickTimer += 1;
-      this.audio.play("click", this.pendulum.getAbsolutePosition());
+    this.pendulum.rotation.x = Math.sin(this.clockTime * Math.PI) * 0.22;
+    if (!clockStopped) {
+      this.tickTimer -= dt;
+      if (this.tickTimer <= 0) {
+        this.tickTimer += 1;
+        this.audio.play("click", this.pendulum.getAbsolutePosition());
+      }
     }
 
     const shaft = lightsOn ? 0.18 : 0.45;

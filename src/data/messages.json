@@ -1,0 +1,53 @@
+{
+  "comment": "Nhóm Zalo của gia đình. `night`: tin có từ đêm nào (đêm sau thấy lại tin đêm trước). `from` \"Út\" = chính người chơi (hiện bên phải). Tin tới giữa đêm thì do Director gửi bằng action \"message\".",
+  "group": "Gia đình họ Lâm 🙏",
+  "thread": [
+    { "night": 0, "from": "Chú Tư", "text": "Chìa khóa để dưới chậu bông trước cửa. Đi thẳng vô nhà, đừng la cà." },
+    { "night": 0, "from": "Cô Ba", "text": "Út về tới đâu rồi con? Đi ngang miếu đầu ngõ nhớ xá một cái nghen." },
+    { "night": 0, "from": "Dì Năm", "text": "[Chuyển tiếp] ⚠️ THÁNG CÔ HỒN — 10 ĐIỀU KIÊNG: không huýt sáo ban đêm, không phơi đồ qua đêm, không gọi tên nhau ngoài đường… CHIA SẺ cho 10 người để được bình an!!!" },
+    { "night": 0, "from": "Chú Tư", "text": "Dì Năm." },
+    { "night": 0, "from": "Dì Năm", "text": "Gửi lộn nhóm, xin lỗi cả nhà 🙏" },
+    { "night": 0, "from": "Út", "text": "Con tới đầu ngõ rồi." },
+
+    { "night": 1, "from": "Mẹ", "text": "Út tới nhà bà chưa con? Mẹ xin nghỉ mà xưởng không cho. Con thay mẹ lo cho bà nghen." },
+    { "night": 1, "from": "Mẹ", "text": "Đêm nay đầu thất. Thắp nhang cho bà rồi ngủ sớm, đừng thức khuya." },
+    { "night": 1, "from": "Cô Ba", "text": "Út nhớ để chén nước với nắm gạo muối ngoài cửa nghe con." },
+    { "night": 1, "from": "Chú Tư", "text": "Đừng nghe cô Ba. Gạo muối là cúng cô hồn. Bà đâu phải cô hồn." },
+    { "night": 1, "from": "Cô Ba", "text": "Thì có kiêng có lành. Mà đừng mở cửa sổ nghe con, gió độc." },
+    { "night": 1, "from": "Dì Năm", "text": "[Chuyển tiếp] VIDEO: “Đêm đầu thất người mất về thăm nhà — có thật hay không?” 👁 2,1 triệu lượt xem" },
+    { "night": 1, "from": "Dì Năm", "text": "[Video 2:14] Đám bà. Dì quay lại cho Út coi, Út không về kịp 🙏" },
+    { "night": 1, "from": "Cô Ba", "text": "Dì Năm ơi phút 0:47 con mèo đen ở đâu nhảy qua hòm bà vậy??? Quỷ nhập tràng đó trời ơi!!!" },
+    { "night": 1, "from": "Chú Tư", "text": "Mèo nhà bên." },
+    { "night": 1, "from": "Cô Ba", "text": "Còn hòm rỉ nước suốt ba ngày quàn, ai thấy mà không sợ. Người khiêng còn nói hòm nặng như có hai người nằm." },
+    { "night": 1, "from": "Chú Tư", "text": "Gỗ ướt thì nặng. Đừng nói mấy chuyện đó nữa." },
+    { "night": 1, "from": "Chú Tư", "text": "Út. Đêm nay đừng mở cửa cho ai." },
+    { "night": 1, "from": "Út", "text": "Dạ." },
+
+    { "night": 2, "from": "Chú Tư", "text": "Chú đi mời thầy Sáu. Giấy chú để trên tủ đầu giường." },
+    { "night": 2, "from": "Cô Ba", "text": "Hôm qua nhà có chuyện gì không con? Cô nằm mơ thấy bà đứng ngoài hiên, tóc ướt." },
+    { "night": 2, "from": "Cô Ba", "text": "Trời mưa đừng ra giếng nghe. Mà có ra thì đội nón vô, đừng để ướt tóc." },
+    { "night": 2, "from": "Dì Năm", "text": "[Chuyển tiếp] 5 loại cây tuyệt đối không trồng trong nhà vì hút âm khí: 1. Cây chuối…" },
+    { "night": 2, "from": "Út", "text": "Dì Năm ơi nhà bà có bụi chuối to lắm." },
+    { "night": 2, "from": "Dì Năm", "text": "Vậy thôi con đừng đọc tiếp 😥" },
+    { "night": 2, "from": "Cô Ba", "text": "Bà mất nhằm giờ trùng tang, cô coi lịch rồi. Trùng tang là kéo thêm người trong nhà đó, cả nhà coi chừng!!" },
+    { "night": 2, "from": "Mẹ", "text": "Bên này chùa có lễ nằm hòm giải hạn, nằm vô quan tài một lát cho hạn nó tưởng mình chết rồi. Đồng nghiệp mẹ đi rồi. Mẹ ghi tên con luôn rồi đó." },
+    { "night": 2, "from": "Cô Ba", "text": "Trời đất ơi người sống ai lại đi nằm hòm!!" },
+    { "night": 2, "from": "Dì Năm", "text": "[Chuyển tiếp] 7 lợi ích bất ngờ của việc nằm hòm giải hạn — số 4 sẽ khiến bạn bất ngờ" },
+    { "night": 2, "from": "Út", "text": "Con không nằm đâu mẹ." },
+
+    { "night": 2.5, "from": "Cô Ba", "text": "Có ai gọi được chú Tư không? Từ hôm qua tới giờ không bắt máy." },
+    { "night": 2.5, "from": "Út", "text": "Người trong xóm nói thấy chú đi ra gốc đa. Con ra kiếm." },
+    { "night": 2.5, "from": "Cô Ba", "text": "Ban đêm đi ngang ruộng thì tắt đèn nghe con. Bà nội con dặn vậy từ hồi cô còn nhỏ, cô cũng không biết tại sao." },
+    { "night": 2.5, "from": "Mẹ", "text": "Có chuyện gì vậy? Sao cả nhà nhắn liên tục vậy?" },
+
+    { "night": 3, "from": "Cô Ba", "text": "Thầy Sáu nói chú Tư bị mất hồn. Cô thắp nhang từ sáng tới giờ." },
+    { "night": 3, "from": "Dì Năm", "text": "[Chuyển tiếp] Dấu hiệu người bị “vong theo”: 1. Hay quên. 2. Không thấy đau. 3. Soi gương thấy lạ. 4. Đi không nghe tiếng bước chân." },
+    { "night": 3, "from": "Cô Ba", "text": "Dì Năm gửi mấy cái này làm chi giờ này." },
+    { "night": 3, "from": "Út", "text": "…" },
+    { "night": 3, "from": "Mẹ", "text": "Út, mẹ mua vé rồi. Mốt mẹ về. Ráng chờ mẹ nghen con." },
+
+    { "night": 4, "from": "Cô Ba", "text": "Sáng nay cô ghé, thấy Út đứng ngoài cổng, kêu hoài không trả lời. Út giận cô hả con?" },
+    { "night": 4, "from": "Út", "text": "Con ở trong nhà cả sáng mà cô." },
+    { "night": 4, "from": "Mẹ", "text": "Mẹ ra sân bay rồi. Sáng mai mẹ tới." }
+  ]
+}

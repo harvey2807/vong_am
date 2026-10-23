@@ -3,33 +3,48 @@
     "title": "Mấy điều bà dặn",
     "paper": "school",
     "pages": [
-      "Út, nếu con đọc được tờ giấy này thì bà không còn nữa rồi.\n\nCon về chắc nhằm đêm đầu thất của bà. Người ta nói đêm đó người chết về nhà. Bà thì không về đâu, con đừng sợ bà. Con sợ cái thứ mượn mặt bà mà về.\n\nỞ nhà này, con nhớ kỹ:\n\n1. Sau nửa đêm, nghe gõ cửa ba tiếng thì không được mở. Ai gọi cũng không mở.\n2. Ai gọi tên con từ dưới giếng, đừng trả lời.\n3. Đèn trong nhà tắt rồi thì đừng nhìn vào ảnh thờ.\n4. Nghe tiếng bước chân dừng ngay sau lưng, đừng quay lại liền. Đếm tới ba.\n\nNếu nó gõ cửa, con thắp cho bà một nén nhang. Bà giữ cửa cho con.\n\nChìa khóa phòng bà, bà để chỗ cũ dưới bếp."
+      "Út, nếu con đọc được tờ giấy này thì bà không còn nữa rồi.\n\nCon về chắc nhằm đêm đầu thất của bà. Người ta nói đêm đó người chết về nhà. Bà thì không về đâu, con đừng sợ bà. Con sợ cái thứ mượn mặt bà mà về.\n\nMấy điều này bà viết từ hồi con còn nhỏ. Giờ bà chép lại cho con:\n\n1. Sau nửa đêm, nghe gõ cửa ba tiếng thì không được mở. Ai gọi cũng không mở.\n2. Ai gọi tên con từ dưới giếng, đừng trả lời. Kể cả giọng bà.\n3. Đèn trong nhà tắt rồi thì đừng nhìn vào ảnh thờ.\n4. Nghe tiếng bước chân dừng ngay sau lưng, đừng quay lại liền. Đếm tới ba.\n\nNếu nó gõ cửa, con thắp cho bà một nén nhang. Bà giữ cửa cho con.",
+      "Chìa khóa phòng bà, bà cất trong hộp bánh quy dưới bếp, khóa bằng sợi dây khóa xe đạp hồi xưa của con.\n\nMã số là ngày giỗ ông, tính theo âm lịch: ngày trước, tháng sau.\n\nCon cháu mà quên ngày giỗ ông là bà buồn lắm à nghen.\n\nTái bút: Mấy cỗ hòm của ông ở gian tiệm, con đừng gõ lên nắp. Hòm trống mà nghe gõ lại là có người nhận."
+    ]
+  },
+  "gioList": {
+    "title": "Ngày giỗ trong nhà",
+    "paper": "hongdieu",
+    "pages": [
+      "(Tờ giấy hồng điều bà ghim cạnh bàn thờ. Chữ bút bi, ghi theo âm lịch.)\n\nCố ông Lâm Thuận (cha ông) — 22 tháng Chạp.\nCố bà — mùng 3 tháng Hai. Nhớ mua bánh in, cố thích.\nChú Hải (con út của bà, mất năm lên chín) — mùng 8 tháng Năm.\nÔng nhà (Lâm Phúc) — ~~Rằm tháng Bảy~~\n\n(Chữ “Rằm” bị gạch rất mạnh tay. Bên dưới, bà viết lại bằng mực khác:)\nKhông phải Rằm. Đêm Rằm ông còn sống, ngồi canh cửa tới gần sáng.\nSáng hôm sau ông mới đi. Giỗ ông là ngày hôm sau."
+    ]
+  },
+  "calendar": {
+    "title": "LỊCH BLOC · THÁNG 8 · 2024",
+    "paper": "calendar",
+    "pages": [
+      "18\nCHỦ NHẬT\n\nÂm lịch: ngày 15 tháng 7 năm Giáp Thìn\nRẰM THÁNG BẢY — Lễ Vu Lan, xá tội vong nhân\n\nNên làm: cúng cô hồn, phóng sinh.\nNên tránh: dời nhà, mở cửa lúc nửa đêm.\n\n(Cuốn lịch dừng ở tờ này. Từ hôm đó không ai xé thêm tờ nào nữa.)"
     ]
   },
   "diary": {
     "title": "Sổ tay của bà",
     "paper": "diary",
     "pages": [
-      "Mùng chín tháng Bảy.\nHôm nay bà mở tủ áo lấy đồ cúng Rằm. Lá bùa thầy Sáu dán hai mươi năm vẫn còn đó, mà bên trong trống trơn. Chỉ còn ít giấy vụn và mấy nan tre gãy.\nBà không dám kể với chú Tư.",
-      "Rằm tháng Bảy.\nLại ba tiếng gõ. Nó đứng ngoài hiên tới gần sáng, gọi bằng giọng ông nhà. Ông mất hai mươi năm rồi mà giọng nó y như thật.",
-      "Mười chín tháng Bảy.\nBà nhớ hồi Út lên sáu, làm bể cái chén men lam của ông, sợ quá trốn dưới gầm bàn thờ cả buổi chiều. Bà thấy mà làm như không thấy. Chuyện đó bà chưa kể với ai, kể cả mẹ nó.",
-      "Hai mươi ba tháng Bảy.\nNó biết những chuyện bà chưa từng nói ra. Bà nghĩ nó không bắt chước giọng người ta. Nó lấy đi ký ức.",
-      "Hai mươi sáu tháng Bảy.\nTấm ảnh trên bàn thờ có thêm một người. Mỗi đêm mặt nó lại rõ hơn.\nNếu Út về mà bà không còn, nó sẽ gọi bằng giọng của bà.\n\nĐừng mở cửa, Út.\n\n[[Bà ơi, mở cửa cho con. Con là Út nè.]]"
+      "Mùng chín tháng Bảy.\nSắp Rằm rồi mà bà không nhớ cất xấp bùa thầy Sáu ở đâu. Năm nào cũng phải thay trước Rằm. Hai mươi năm chưa năm nào bà quên.\nBà không dám hỏi chú Tư.",
+      "Rằm tháng Bảy.\nLại ba tiếng gõ. Hai mươi năm nay nó chưa gõ được tới tiếng thứ ba.\nNó đứng ngoài hiên tới gần sáng, gọi bà bằng giọng con nít. Giọng Út hồi sáu tuổi.",
+      "Mười bảy tháng Bảy.\nBà nhớ hồi Út lên sáu, làm bể cái chén men lam của ông, sợ quá trốn dưới gầm bàn thờ cả buổi chiều, không ho he tiếng nào. Bà thấy mà làm như không thấy. Chuyện đó bà chưa kể với ai, kể cả mẹ nó.",
+      "Mười tám tháng Bảy.\nNó biết những chuyện bà chưa từng nói ra. Bà nói với chú Tư là nó lấy ký ức của người ta để giả giọng.\nBà nói vậy cho chú yên.",
+      "Hai mươi tháng Bảy.\nTấm ảnh trên bàn thờ có thêm một người. Mỗi đêm mặt nó lại rõ hơn.\nBà nhắn Út rồi. Nó hứa về.\nNếu Út về mà bà không còn, nó sẽ gọi bằng giọng của bà.\n\nĐừng mở cửa, Út.\n\n[[Bà ơi, mở cửa cho con. Con là Út nè.]]"
     ]
   },
   "uncle": {
     "title": "Giấy chú Tư",
     "paper": "pencil",
     "pages": [
-      "Út,\n\nChú ra đầu làng mời thầy, chắc gần sáng mới về được.\n\nThầy nói bà mất nhằm giờ trùng tang. Người ta vớt bà lên từ cái giếng sau vườn, mà cửa trong nhà vẫn cài then. Chú không hiểu nổi. Cái thứ gõ cửa hôm qua sẽ còn tới, cho tới khi tấm ảnh thờ đủ người.",
-      "Bà có dặn chú: nó lấy ký ức để giả giọng. Ký ức đầu tiên nó lấy là cái chén men lam con làm bể hồi nhỏ. Bà gom ba mảnh chén, giấu ba chỗ cho nó khỏi tìm:\n— một mảnh trong hũ gạo dưới bếp,\n— một mảnh chôn dưới gốc chuối sau vườn,\n— một mảnh bà thả xuống giếng.\n\nGom đủ ba mảnh, đặt lên bàn thờ cho bà giữ. Phải xong trước khi trời sáng.\n\nCửa sau chú mở khóa rồi. Ra vườn nhớ hai điều:\nAi gọi từ dưới giếng, kể cả giọng mẹ con, cũng đừng trả lời.\nNghe bước chân dừng ngay sau lưng thì đứng yên, đếm tới ba rồi mới quay lại.\n\n— Chú Tư\n\n[[Chú về rồi nè Út. Ra mở cửa sau cho chú.]]"
+      "Út,\n\nChú ra đầu làng mời thầy, chắc gần sáng mới về được.\n\nCô Ba nói bà mất nhằm giờ trùng tang. Chú không tin mấy chuyện đó. Người ta vớt bà lên từ cái giếng sau vườn, mà cửa trong nhà vẫn cài then. Chú không hiểu nổi. Cái thứ gõ cửa hôm qua sẽ còn tới, cho tới khi tấm ảnh thờ đủ người.\n\nHòm của bà để trong phòng, chú định dùng mà nắp kẹt cứng, như ai gài từ bên trong. Chú phải mua hòm khác. Út đừng đụng vô.",
+      "Bà có dặn chú: nó lấy ký ức để giả giọng. Ký ức đầu tiên nó lấy là cái chén men lam con làm bể hồi nhỏ. Bà gom ba mảnh chén, giấu ba chỗ cho nó khỏi tìm:\n— một mảnh trong hũ gạo dưới bếp,\n— một mảnh bỏ trong bát nhang trên mộ ông (ra cổng sau vườn, theo lối đất tới khu mộ nhà mình),\n— một mảnh bà thả xuống giếng.\n\nGom đủ ba mảnh, đặt lên bàn thờ cho bà giữ. Phải xong trước khi trời sáng.\n\nCửa sau chú mở khóa rồi. Ra vườn nhớ hai điều:\nAi gọi từ dưới giếng, kể cả giọng mẹ con, cũng đừng trả lời.\nNghe bước chân dừng ngay sau lưng thì đứng yên, đếm tới ba rồi mới quay lại.\n\n— Chú Tư\n\n[[Chú về rồi nè Út. Ra mở cửa sau cho chú.]]"
     ]
   },
   "master": {
     "title": "Giấy thầy Sáu",
     "paper": "do",
     "pages": [
-      "Cậu Út,\n\nChú Tư cậu không về được nữa. Sáng nay tôi thấy chú ngồi ở đầu làng, quay mặt vô gốc đa, miệng cứ lẩm bẩm đếm: một, hai, ba, bốn, năm.\n\nCái chén cậu đặt lên bàn thờ chỉ giữ được bà. Còn nó thì vẫn thiếu một người cho đủ ảnh.\n\nTôi làm cho cậu một hình nhân thế mạng, dựng sẵn ngoài vườn. Muốn nó nhận hình nhân thay cậu thì phải cho hình nhân thành cậu:\n— mặc cho nó cái áo cũ của cậu (bà cất trong tủ áo),\n— dán ảnh của cậu lên mặt nó (ngăn kéo tủ đầu giường),\n— rồi đốt nó đi (diêm trong hộp thiếc dưới bếp).\n\nLàm vậy là phạm điều cấm thứ hai của nghề nhà cậu: làm hình nhân theo mặt người sống. Ông cậu từng phạm cả ba, nên nhà này mới ra nông nỗi. Lần này mình chỉ phạm một, và đốt ngay, không để qua gà gáy.\nTuyệt đối không điểm mắt cho nó.",
+      "Cậu Út,\n\nChú Tư cậu không về được nữa. Sáng nay tôi thấy chú ngồi ở đầu làng, quay mặt vô gốc đa, miệng cứ lẩm bẩm đếm: một, hai, ba, bốn, năm.\n\nCô Ba cậu nói nhà bị trùng tang. Không phải trùng. Nhà này mắc nợ, không phải trùng.\n\nCái chén cậu đặt lên bàn thờ chỉ giữ được bà. Còn nó thì vẫn thiếu một người cho đủ ảnh.\n\nTôi làm cho cậu một hình nhân thế mạng, dựng sẵn ngoài vườn. Muốn nó nhận hình nhân thay cậu thì phải cho hình nhân thành cậu:\n— mặc cho nó cái áo cũ của cậu (bà cất trong tủ áo),\n— dán ảnh của cậu lên mặt nó (bà cất album trong cái rương trên gác kho đồ mã — lên bằng cầu thang trong tiệm của ông),\n— rồi đốt nó đi (diêm trong hộp thiếc dưới bếp).\n\nLàm vậy là phạm điều cấm thứ hai của nghề nhà cậu: làm hình nhân theo mặt người sống. Ông cậu từng phạm cả ba, nên nhà này mới ra nông nỗi. Lần này mình chỉ phạm một, và đốt ngay, không để qua gà gáy.\nTuyệt đối không điểm mắt cho nó.",
       "Mấy hình nhân hầu trong nhà là đồ mã đám tang bà. Đêm nay nó mượn chúng.\nHình nhân không đi khi có người nhìn. Đèn tắt thì rọi đèn pin mà nhìn.\nĐừng quay lưng với chúng quá lâu. Đừng để chúng chạm vào cậu.\n\n— Thầy Sáu"
     ]
   },
@@ -37,8 +52,60 @@
     "title": "Trang cuối sổ tay của bà",
     "paper": "burnt",
     "pages": [
-      "(Kẹp dưới lư hương. Nét chữ run, như viết trong bóng tối.)\n\nNó không phải ma ông, không phải ma ai hết. Ông làm ra nó, bằng giấy, bằng tên con, bằng hai chấm mực ở mắt. Nó là cái lỗ hổng mà nhà mình để lại từ đêm Rằm năm đó.\nNó lấy ký ức, rồi lấy giọng, rồi lấy mặt. Lấy đủ rồi thì nó thành người đó.",
-      "Người thứ năm trong ảnh là thứ nó đang thành. Nó đang thành Út.\n\nMuốn nó đi thì phải cắt nó ra khỏi tấm ảnh mà đốt. Kéo của bà trong hộp may, bà để trên giường.\nNhưng nhớ: đèn tắt thì không được nhìn ảnh. Muốn gỡ ảnh thì phải có đèn. Cầu dao ở tường bếp.\n\nĐêm đó nó sẽ đứng ngoài cửa, nói bằng giọng của con. Nó sẽ nói con mới là đồ giả.\nĐừng mở cửa, Út.\nĐừng mở cửa cho chính mình.\n\n[[Mở đi. Tao đứng ngay sau cánh cửa.]]"
+      "(Kẹp dưới lư hương. Nét chữ run, như viết trong bóng tối.)\n\nNó không phải ma ông, không phải ma ai hết. Đêm Rằm năm đó ông làm một hình nhân, bằng giấy, bằng tên con, bằng hai chấm mực ở mắt. Từ đêm đó nhà mình dư ra một người.\nCó một đứa phải đứng ngoài cửa. Hai mươi năm nay bà giữ cho nó đứng ngoài.",
+      "Người thứ năm trong ảnh lớn lên từng đêm. Nó đang thành Út.\n\nMuốn nó đi thì phải cắt nó ra khỏi tấm ảnh mà đốt. Kéo của bà trong hộp may, bà để trên giường.\nNhưng nhớ: đèn tắt thì không được nhìn ảnh. Muốn gỡ ảnh thì phải có đèn. Cầu dao ở tường bếp.\n\nDưới gầm bàn thờ có một thứ bà giữ hai mươi năm. Con đừng mở.\n\nĐêm đó nó sẽ đứng ngoài cửa, nói bằng giọng của con. Nó sẽ nói con mới là đồ giả.\nĐừng mở cửa, Út.\nĐừng mở cửa cho chính mình.\n\n[[Mở đi. Tao đứng ngay sau cánh cửa.]]"
+    ]
+  },
+  "calendar2003": {
+    "title": "LỊCH BLOC · THÁNG 8 · 2003",
+    "paper": "calendar",
+    "pages": [
+      "12\nTHỨ BA\n\nÂm lịch: ngày 15 tháng 7 năm Quý Mùi\nRẰM THÁNG BẢY — Lễ Vu Lan, xá tội vong nhân\n\nNên làm: cúng cô hồn.\nNên tránh: khai trương, làm đồ cho người sống.\n\n(Tờ lịch của tiệm Phúc Ký. Hai mươi mốt năm, không ai xé.\nDưới bếp, tờ lịch của bà cũng dừng ở một đêm Rằm tháng Bảy.)"
+    ]
+  },
+  "schoolEssay": {
+    "title": "Tập làm văn — lớp Một",
+    "paper": "school",
+    "pages": [
+      "(Quyển vở ô li cũ nhất trong rương, nét chữ con nít, mực tím lem.)\n\nĐề bài: Em hãy kể về một người thân của em.\n\nBài làm\nÔng em làm hình nhân. Ông làm Kim Đồng, Ngọc Nữ, ngựa, nhà lầu. Ông làm khéo nhất xóm.\nHôm qua ông cho em chấm mắt cho một bạn hình nhân. Bạn đó giống em y hệt, mặc áo của em.\nÔng nói đây là bí mật, không được kể cho bà.\nEm thương ông nhất nhà.",
+      "(Mực đỏ của cô giáo:)\nBài viết có cảm xúc. Nhưng em viết sai rồi: hình nhân thì không ai vẽ mắt cả. 7 điểm.\n— Cô Lan\n\n[[Bạn đó vẫn còn mắt.]]"
+    ]
+  },
+  "steleOng": {
+    "title": "Bia mộ ông",
+    "paper": "stone",
+    "pages": [
+      "(Chữ khắc trên bia đá, rêu bám mép.)\n\nHIỂN KHẢO\nLÂM PHÚC\nSinh năm Nhâm Ngọ (1942)\nTạ thế ngày 16 tháng 7 năm Quý Mùi (2003)\nHưởng thọ 62 tuổi\n\nCon cháu phụng thờ\n\n(Ai đó lấy than vạch một chữ dưới chân bia, nét con nít: “Ông ơi”.)"
+    ]
+  },
+  "steleHai": {
+    "title": "Bia mộ chú Hải",
+    "paper": "stone",
+    "pages": [
+      "(Bia nhỏ, chỉ cao tới đầu gối.)\n\nLÂM HẢI\n1971 — 1980\nMất ngày mùng 8 tháng 5 năm Canh Thân\n\n(Ai đó để trên bia một chiếc dép nhựa trẻ con, còn ướt nước ao.)"
+    ]
+  },
+  "graveBa": {
+    "title": "Tấm bảng gỗ trên mộ bà",
+    "paper": "pencil",
+    "pages": [
+      "(Mộ mới đắp, chưa kịp xây. Tấm bảng gỗ tạm, chữ sơn trắng.)\n\nBÀ LÂM PHÚC\nMất ngày 21 tháng 7 năm Giáp Thìn\nHưởng thọ 79 tuổi\n\n(Dưới đất, quanh nén nhang còn cháy, có hai hàng dấu chân trần.\nMột hàng đi tới. Một hàng đi về phía nhà.)"
+    ]
+  },
+  "busTicket": {
+    "title": "Vé xe khách",
+    "paper": "pencil",
+    "pages": [
+      "XE KHÁCH PHƯƠNG NAM — VÉ GIƯỜNG NẰM\nSài Gòn → Ngã ba đầu làng\n\nKhởi hành: 21:30, thứ Bảy 24/08/2024\n(Âm lịch: 21 tháng 7, Giáp Thìn)\nGiường: B12 (tầng dưới)\nHành khách: Út — SĐT: số của mình\n\n(Mặt sau, chữ bút bi của chính mình:)\nBà nhắn về gấp. Không nói với ai.\n\n[[Mày về rồi. Mày nằm đây. Mày nghe hết.]]"
+    ]
+  },
+  "childLetters": {
+    "title": "Thư bà viết cho Út dưới bàn thờ",
+    "paper": "diary",
+    "pages": [
+      "(Hai mươi lá thư, mỗi Rằm tháng Bảy một lá, buộc chung một sợi chỉ đỏ. Lá trên cùng:)\n\nRằm tháng Bảy, năm Giáp Thân.\n\nÚt của bà,\nMột năm rồi. Bà vẫn để con nằm chỗ con hay trốn, cho con khỏi sợ. Đứa ngoài kia nó ăn cơm, nó đi học, nó gọi bà là bà. Nó có hồn của con, nên nó cũng thương bà như con thương bà.\n\nBà xin lỗi con. Đêm đó con lạnh quá, bà tưởng con là giấy.",
+      "(Lá giữa xấp, chữ đã run:)\n\nRằm tháng Bảy, năm Mậu Tuất.\n\nNăm nay nó lớn vọt, bà phải cho nó thêm một cái vía. Bà còn ba cái. Mẹ con bên Đài nhắn về hỏi sao Út ít gọi. Bà nói nó bận học.\n\nCon dưới này có lớn không? Ảnh thờ năm nay bà thấy có thêm một cái bóng đứng sau lưng mẹ con. Bà không gỡ ra. Bà để con đứng đó với cả nhà.",
+      "(Lá cuối, viết dở:)\n\nRằm tháng Bảy, năm Giáp Thìn.\n\nÚt ơi, năm nay bà quên mất xấp bùa để ở đâu. Bà ngồi đây từ chiều mà không nhớ ra. Có khi bà quên luôn là bà không được mở cửa cho con.\n\nNếu một mai hai đứa gặp nhau, bà chỉ xin một điều: đừng đứa nào ghét đứa nào. Hai đứa đều là cháu của bà. Bà ẵm nhầm một lần, rồi bà thương cả hai suốt hai mươi năm.\n\nCó máu thì"
     ]
   }
 }

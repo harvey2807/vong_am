@@ -9,7 +9,7 @@ import {
   Texture,
   TransformNode,
   Vector3,
-} from "@babylonjs/core";
+} from "../babylon";
 import type { Game } from "../core/Game";
 import type { EntityCommand } from "../director/types";
 import type { HidingSpot } from "../world/House";
@@ -18,6 +18,12 @@ import { drawEntityFace, drawHumanFace } from "../world/textures";
 import { Sprite, SPRITES } from "../world/sprites";
 import tuning from "../data/knocker.json";
 import { diff } from "../core/difficulty";
+import { comfort } from "../core/Settings";
+import { ATTIC_POINTS, FLOOR1_Y, SHOP_STAIR, STAIR_FOOT, STAIR_TOP } from "../world/floors";
+
+type Floor = 0 | 1;
+/** Tốc độ leo cầu thang (m/s theo chiều dài đoạn thang). Đủ chậm để người chơi nghe từng bậc. */
+const CLIMB_SPEED = 1.3;
 
 type State = "inactive" | "idle" | "patrol" | "investigate" | "search" | "chase" | "caught";
 
@@ -73,6 +79,14 @@ export class Knocker {
   /** Lúc đuổi, hình ảnh chỉ cập nhật vị trí theo từng nhịp — giật cục như phim tua thiếu khung. */
   private stutter = 0;
   private snap?: Vector3;
+  /** Độ cao sàn nó đang đứng (0 nhà dưới, FLOOR1_Y trên gác). */
+  private baseY = 0;
+  /** Tầng của chỗ thấy người chơi lần cuối. */
+  private lastKnownFloor: Floor = 0;
+  /** Đích ở tầng khác: đi tới chân/đầu cầu thang, leo, rồi đi tiếp tới đích. */
+  private pendingClimb?: { target: Vector3; floor: Floor };
+  /** Đang leo: tiến độ 0..1 dọc đoạn thang, chiều lên (1) hay xuống (-1). */
+  private climbing?: { dir: 1 | -1; t: number; step: number };
 
   constructor(
     private readonly scene: Scene,
@@ -151,8 +165,15 @@ export class Knocker {
     return this.root.position;
   }
 
+  /** Tầng nó đang ở (đang leo thì tính theo nửa thang). */
+  get floor(): Floor {
+    return this.root.position.y > FLOOR1_Y / 2 ? 1 : 0;
+  }
+
   /** 0..1 — đưa vào nhạc nền để tiếng drone dâng lên khi nó tới gần. */
   get threat(): number {
+    // Khác tầng: vẫn nghe tiếng nó lục lọi ở tầng kia, nhưng chưa phải nguy hiểm trước mặt.
+    if (this.state !== "inactive" && this.state !== "caught" && this.floor !== this.player.floor) return 0.35;
     switch (this.state) {
       case "inactive":
         return 0;
@@ -180,7 +201,7 @@ export class Knocker {
         break;
       case "alert":
         if (this.state === "inactive") this.appear(at ?? "hallEnd");
-        this.investigate(flat(this.player.camera.position), true);
+        this.investigate(flat(this.player.camera.position), true, this.player.floor);
         break;
       case "grab":
         this.root.setEnabled(true);
@@ -197,16 +218,21 @@ export class Knocker {
   }
 
   private appear(anchor: string): void {
-    let p = flat(this.game.house.anchors.get(anchor) ?? Vector3.Zero());
+    const a = this.game.house.anchors.get(anchor) ?? Vector3.Zero();
+    let p = flat(a);
+    // Anchor trên gác (y cao hơn nửa tầng) thì nó hiện trên gác.
+    this.baseY = a.y > FLOOR1_Y - 0.7 ? FLOOR1_Y : 0;
+    this.pendingClimb = undefined;
+    this.climbing = undefined;
     // Người chơi đang đứng ngay đó (vd. định mở cửa chính) → hiện ở điểm tuần tra xa nhất mà người chơi vẫn nhìn thấy.
     const cam = flat(this.player.camera.position);
-    if (Vector3.Distance(p, cam) < 4) {
+    if (this.baseY === 0 && Vector3.Distance(p, cam) < 4) {
       const patrol = [...this.game.house.nav.nodes.values()].filter((n) => n.patrol);
       const inView = patrol.filter((n) => this.clear(cam, n.pos));
       const nodes = inView.length ? inView : patrol;
       p = nodes.reduce((a, b) => (Vector3.Distance(a.pos, cam) > Vector3.Distance(b.pos, cam) ? a : b)).pos;
     }
-    this.root.position.set(p.x, 0, p.z);
+    this.root.position.set(p.x, this.baseY, p.z);
     this.faceTowards(this.player.camera.position, 1);
     this.root.setEnabled(true);
     this.state = "idle";
@@ -218,7 +244,7 @@ export class Knocker {
   onPlayerHide(spot: HidingSpot): void {
     this.spot = spot;
     this.sawHide = this.state === "chase" && this.canSeePlayer(true);
-    if (this.sawHide) this.investigate(spot.front, true);
+    if (this.sawHide) this.investigate(spot.front, true, 0);
   }
 
   /** Đang đứng sát cửa tủ, nghe ngóng — người chơi phải nín thở (Game kiểm tra). */
@@ -297,12 +323,13 @@ export class Knocker {
     const dist = this.distanceToPlayer();
     if (this.canSeePlayer()) {
       this.lastKnown = flat(this.player.camera.position);
+      this.lastKnownFloor = this.player.floor;
       const range = (this.player.flashlightOn ? tuning.sight.rangeFlashlight : tuning.sight.range) * diff().sight;
       if (dist < tuning.sight.instantChaseDistance) return this.startChase();
       this.alert += dt * tuning.sight.alertPerSecond * (1.5 - dist / range);
       if (this.alert >= 1) return this.startChase();
       if (this.alert > 0.3 && this.state !== "investigate") {
-        this.investigate(this.lastKnown, false);
+        this.investigate(this.lastKnown, false, this.lastKnownFloor);
         return true;
       }
       return false;
@@ -310,13 +337,18 @@ export class Knocker {
 
     this.alert = Math.max(0, this.alert - dt * tuning.sight.alertDecayPerSecond);
     const noise = this.player.noise;
+    // Khác tầng: chỉ nghe được tiếng chạy thình thịch trên ván gác (hoặc dưới nhà vọng lên), tầm ngắn hơn.
+    const otherFloor = this.player.floor !== this.floor;
+    const hearing = diff().hearing * (otherFloor ? 0.6 : 1);
     const heard =
-      !this.player.hidden && ((noise === 2 && dist < tuning.hearing.sprint * diff().hearing) || (noise === 1 && dist < tuning.hearing.walk * diff().hearing));
+      !this.player.hidden &&
+      ((noise === 2 && dist < tuning.hearing.sprint * hearing) || (!otherFloor && noise === 1 && dist < tuning.hearing.walk * hearing));
     if (heard) {
       const at = flat(this.player.camera.position);
-      if (this.state !== "investigate" || !this.lastKnown || Vector3.Distance(at, this.lastKnown) > 1.5) {
+      if (this.state !== "investigate" || !this.lastKnown || Vector3.Distance(at, this.lastKnown) > 1.5 || this.lastKnownFloor !== this.player.floor) {
         this.lastKnown = at;
-        this.investigate(at, false);
+        this.lastKnownFloor = this.player.floor;
+        this.investigate(at, false, this.lastKnownFloor);
         return true;
       }
     }
@@ -328,13 +360,27 @@ export class Knocker {
     if (seen) {
       this.lostTime = 0;
       this.lastKnown = flat(this.player.camera.position);
-      this.route = [{ pos: this.lastKnown }];
+      this.lastKnownFloor = this.player.floor;
+      if (!this.climbing) {
+        this.pendingClimb = undefined;
+        this.route = [{ pos: this.lastKnown }];
+      }
     } else {
       this.lostTime += dt;
-      if (this.route.length === 0 && this.lastKnown) this.routeTo(this.lastKnown);
+      // Vừa khuất (thường là chạy lên/xuống thang): trong vài giây đầu nó còn nghe tiếng chân mà bám theo.
+      if (this.lostTime < 2 && !this.player.hidden) {
+        const at = flat(this.player.camera.position);
+        const floor = this.player.floor;
+        if (floor !== this.lastKnownFloor || Vector3.Distance(at, this.lastKnown ?? at) > 2) {
+          this.lastKnown = at;
+          this.lastKnownFloor = floor;
+          if (!this.climbing) this.routeTo(at, floor);
+        }
+      }
+      if (this.route.length === 0 && !this.climbing && !this.pendingClimb && this.lastKnown) this.routeTo(this.lastKnown, this.lastKnownFloor);
     }
 
-    if (!this.player.hidden && this.distanceToPlayer() < tuning.catchDistance) return this.seize();
+    if (!this.player.hidden && this.player.floor === this.floor && this.distanceToPlayer() < tuning.catchDistance) return this.seize();
 
     const arrived = this.follow(dt, tuning.speed.chase * diff().knockerSpeed);
     if (!seen && (arrived || this.lostTime > tuning.loseSightAfter + 4)) {
@@ -348,6 +394,7 @@ export class Knocker {
   private startChase(): true {
     if (this.state !== "chase") {
       this.game.audio.play("sting");
+      this.game.player.punch(0.12);
       this.game.director.set("chased");
     }
     this.state = "chase";
@@ -362,12 +409,12 @@ export class Knocker {
     this.nextPatrolPoint();
   }
 
-  private investigate(at: Vector3, hurry: boolean): void {
+  private investigate(at: Vector3, hurry: boolean, floor: Floor = this.floor): void {
     this.state = "investigate";
     this.hurry = hurry;
     // Người chơi trốn trong tủ ngay chỗ nó định tới → nó tới đứng trước cửa tủ.
-    const target = this.spot && Vector3.Distance(at, this.spot.front) < 2.2 ? this.spot.front : at;
-    this.routeTo(target);
+    const nearSpot = this.spot && floor === 0 && Vector3.Distance(at, this.spot.front) < 2.2;
+    this.routeTo(nearSpot ? this.spot!.front : at, floor);
   }
 
   private startSearch(): void {
@@ -384,6 +431,19 @@ export class Knocker {
   }
 
   private nextPatrolPoint(): void {
+    // Người chơi ở tầng khác: nửa số lần nó đổi tầng theo (lên gác lục soát, hay xuống nhà dưới).
+    const canClimb = this.game.house.stairs.length > 0;
+    const floor: Floor = canClimb && this.player.floor !== this.floor && Math.random() < 0.5 ? this.player.floor : this.floor;
+    if (floor === 1) {
+      const here = flat(this.root.position);
+      const points = ATTIC_POINTS.map(([x, z], i) => ({ id: `attic${i}`, pos: new Vector3(x, 0, z) })).filter(
+        (p) => p.id !== this.lastPatrolNode && (this.floor === 0 || Vector3.Distance(p.pos, here) > 1.5),
+      );
+      const next = points[Math.floor(Math.random() * points.length)];
+      this.lastPatrolNode = next.id;
+      this.routeTo(next.pos, 1);
+      return;
+    }
     const nav = this.game.house.nav;
     const candidates = [...nav.nodes.values()].filter(
       (n) => n.patrol && n.id !== this.lastPatrolNode && Vector3.Distance(n.pos, flat(this.root.position)) > 1.5,
@@ -397,7 +457,7 @@ export class Knocker {
     }
     const next = pool[Math.floor(Math.random() * pool.length)];
     this.lastPatrolNode = next.id;
-    this.routeTo(next.pos);
+    this.routeTo(next.pos, 0);
   }
 
   /** Bị bắt: mặt nó áp sát camera (jumpscare), rồi để Director chạy đoạn kết. */
@@ -449,7 +509,7 @@ export class Knocker {
 
   /** Nghe tiếng động lớn ở `at` (vd. cầu dao). Đang đi tuần/lục soát thì tới xem. */
   hear(at: Vector3): void {
-    if (this.state === "patrol" || this.state === "search" || this.state === "idle") this.investigate(flat(at), false);
+    if (this.state === "patrol" || this.state === "search" || this.state === "idle") this.investigate(flat(at), false, 0);
   }
 
   private seize(): void {
@@ -485,7 +545,8 @@ export class Knocker {
     const d = Math.max(0.42, 0.9 - this.timer * 3);
     this.root.position.x = cam.position.x + fwd.x * d;
     this.root.position.z = cam.position.z + fwd.z * d;
-    cam.rotation.z = (Math.random() - 0.5) * 0.06;
+    // Rung camera lúc bị bắt — tắt khi người chơi chọn giảm chớp & rung.
+    if (!comfort.calm) cam.rotation.z = (Math.random() - 0.5) * 0.06;
     this.head.rotation.z = 0.25 + Math.sin(this.timer * 40) * 0.05;
     // Ảnh phẳng không nghiêng đầu được — rung giật kích thước thay vào.
     this.sprite.mesh.scaling.set(1 + Math.random() * 0.05, 1 + Math.sin(this.timer * 40) * 0.03, 1);
@@ -493,15 +554,79 @@ export class Knocker {
 
   // ---------------------------------------------------------------- di chuyển
 
-  private routeTo(target: Vector3): void {
+  /**
+   * Tìm đường tới `target` ở tầng `floor`. Khác tầng thì đi tới chân (hoặc đầu) cầu thang trước, leo, rồi đi tiếp.
+   * Trên gác là khoảng trống liền nên đi thẳng; nhà dưới thì theo đồ thị điểm dẫn đường.
+   */
+  private routeTo(target: Vector3, floor: Floor = this.floor): void {
     this.doorWait = 0;
-    this.route = this.game.house.nav.route(flat(this.root.position), target, (a, b) => this.clear(a, b));
+    const to = flat(target);
+    if (this.climbing) {
+      // Đang leo dở: đổi đích; muốn về tầng cũ thì quay đầu ngay trên thang.
+      const dest: Floor = this.climbing.dir === 1 ? 1 : 0;
+      if (floor !== dest) this.climbing.dir = this.climbing.dir === 1 ? -1 : 1;
+      this.pendingClimb = { target: to, floor };
+      return;
+    }
+    if (floor !== this.floor && this.game.house.stairs.length) {
+      this.pendingClimb = { target: to, floor };
+      this.route = this.routeOnFloor(this.floor === 0 ? STAIR_FOOT : STAIR_TOP);
+    } else {
+      this.pendingClimb = undefined;
+      this.route = this.routeOnFloor(to);
+    }
+  }
+
+  private routeOnFloor(target: Vector3): Waypoint[] {
+    const to = flat(target);
+    if (this.baseY > 0) return [{ pos: to }];
+    return this.game.house.nav.route(flat(this.root.position), to, (a, b) => this.clear(a, b));
+  }
+
+  private startClimb(): void {
+    const up = this.floor === 0;
+    this.climbing = { dir: up ? 1 : -1, t: up ? 0 : 1, step: 0 };
+  }
+
+  /** Leo từng bậc dọc cầu thang (nhìn thấy và nghe thấy được), tới nơi thì đi tiếp tới đích ở tầng mới. */
+  private updateClimb(dt: number): boolean {
+    const c = this.climbing!;
+    const s = SHOP_STAIR;
+    const len = Vector3.Distance(flat(STAIR_FOOT), flat(STAIR_TOP));
+    c.t = Math.min(1, Math.max(0, c.t + (c.dir * CLIMB_SPEED * diff().knockerSpeed * dt) / len));
+    const z = STAIR_FOOT.z + (STAIR_TOP.z - STAIR_FOOT.z) * c.t;
+    const y = s.y0 + (s.y1 - s.y0) * Math.min(1, Math.max(0, (z - s.z0) / (s.z1 - s.z0)));
+    const pos = this.root.position;
+    pos.set(STAIR_FOOT.x, y, z);
+    this.root.rotation.y = c.dir === 1 ? 0 : Math.PI;
+    c.step += (CLIMB_SPEED * dt) / 0.32;
+    if (c.step >= 1) {
+      c.step = 0;
+      // Mỗi bậc một tiếng nện + ván kêu: người chơi trên gác nghe nó đang lên.
+      this.game.audio.play("heavyStep", new Vector3(pos.x, y + 0.1, z));
+      if (Math.random() < 0.35) this.game.audio.play("creak", new Vector3(pos.x, y + 0.3, z));
+    }
+    if ((c.dir === 1 && c.t < 1) || (c.dir === -1 && c.t > 0)) return false;
+    this.baseY = c.dir === 1 ? FLOOR1_Y : 0;
+    this.climbing = undefined;
+    const next = this.pendingClimb;
+    this.pendingClimb = undefined;
+    if (!next) return true;
+    this.routeTo(next.target, next.floor);
+    return false;
   }
 
   /** Đi theo route. Trả về true khi đã tới điểm cuối. */
   private follow(dt: number, speed: number): boolean {
+    if (this.climbing) return this.updateClimb(dt);
     const wp = this.route[0];
-    if (!wp) return true;
+    if (!wp) {
+      if (this.pendingClimb) {
+        this.startClimb();
+        return false;
+      }
+      return true;
+    }
 
     if (wp.door && !this.game.house.isDoorOpen(wp.door)) {
       // Đứng trước cửa một nhịp rồi mới mở — người chơi kịp nghe tiếng cót két.
@@ -522,14 +647,18 @@ export class Knocker {
     this.stepDistance += step;
     if (this.stepDistance > STEP_LENGTH) {
       this.stepDistance = 0;
-      this.game.audio.play("heavyStep", new Vector3(pos.x, 0.1, pos.z));
+      this.game.audio.play("heavyStep", new Vector3(pos.x, this.baseY + 0.1, pos.z));
     }
     // Dáng đi: nhún nhẹ, nghiêng người như kéo lê chân.
-    pos.y = Math.abs(Math.sin(this.time * speed * 4)) * 0.025;
+    pos.y = this.baseY + Math.abs(Math.sin(this.time * speed * 4)) * 0.025;
     this.root.rotation.z = Math.sin(this.time * speed * 2) * 0.03;
 
     if (dist < 0.12) {
       this.route.shift();
+      if (this.route.length === 0 && this.pendingClimb) {
+        this.startClimb();
+        return false;
+      }
       return this.route.length === 0;
     }
     return false;
@@ -569,6 +698,8 @@ export class Knocker {
   /** Nhìn thấy người chơi: trong tầm, trong góc nhìn, không bị tường che. Khi truy đuổi thì không xét góc. */
   private canSeePlayer(ignoreHidden = false): boolean {
     if (this.player.hidden && !ignoreHidden) return false;
+    // Khác tầng thì không thấy (kể cả qua lỗ cầu thang — nhìn ngược lên/xuống thì tầm quá hẹp).
+    if (this.player.floor !== this.floor) return false;
     const eye = this.headPosition();
     const target = this.player.camera.position;
     const to = target.subtract(eye);
@@ -584,7 +715,8 @@ export class Knocker {
 
   /** Không có vật cản giữa hai điểm trên sàn (thử ở tầm ngực). */
   private clear(a: Vector3, b: Vector3): boolean {
-    return this.ray(new Vector3(a.x, PROBE_HEIGHT, a.z), new Vector3(b.x, PROBE_HEIGHT, b.z));
+    const y = this.baseY + PROBE_HEIGHT;
+    return this.ray(new Vector3(a.x, y, a.z), new Vector3(b.x, y, b.z));
   }
 
   private ray(a: Vector3, b: Vector3): boolean {

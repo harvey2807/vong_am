@@ -5,6 +5,7 @@ import night2 from "../data/night2.json";
 import night25 from "../data/night2_5.json";
 import { SCARECROW_SPOTS } from "../world/Fields";
 import night3 from "../data/night3.json";
+import night35 from "../data/night3_5.json";
 import night4 from "../data/night4.json";
 
 export interface Level {
@@ -21,11 +22,15 @@ export interface Level {
   /** Đoạn kể nối chương, hiện trên màn chuyển chương trước khi vào đêm. */
   intro: string[];
   /** Hình nhân đứng thêm trong nhà (ngoài hai hình nhân chầu bàn thờ): x, z, hướng nhìn độ. */
-  effigies?: [number, number, number][];
+  effigies?: ([number, number, number] | [number, number, number, number])[];
   /** Hình nhân chỉ đi khi đèn tắt. */
   effigiesDarkOnly?: boolean;
   /** Bù nhìn ngoài đồng (x, z, hướng nhìn độ) — chỉ màn Chạng vạng. */
   scarecrows?: [number, number, number][];
+  /** Chương hồi tưởng năm 2003: nhà chưa có đám tang, tiệm còn mở (xem House.past). */
+  past?: boolean;
+  /** Độ cao mắt (m) — mặc định 1,6; Út sáu tuổi thấp hơn. */
+  eye?: number;
 }
 
 export const LEVELS: Record<number, Level> = {
@@ -111,13 +116,34 @@ export const LEVELS: Record<number, Level> = {
       [0.3, -1.6, 180],
       [4.4, -4.1, -90],
       [2.2, 5.3, 135],
+      // Trên gác kho đồ mã (độ cao sàn gác 3.2): đứng giữa lối đi giữa hai dãy đồ mã.
+      [1.6, -2.4, 160, 3.2],
+      [-2.6, 3.6, 110, 3.2],
     ],
+  },
+  // Giấc mơ giữa Đêm 3 và Đêm cuối (id 3.5 để thứ tự tiến trình so sánh số vẫn đúng).
+  3.5: {
+    id: 3.5,
+    title: "Hồi tưởng",
+    subtitle: "Rằm năm Quý Mùi",
+    intro: [
+      "Hình nhân thế mạng cháy tới gần sáng. Tôi ngồi canh đống tro rồi thiếp đi lúc nào không hay.",
+      "Và tôi mơ.",
+      "Trong mơ tôi sáu tuổi. Ông còn sống. Tiệm Phúc Ký còn mở cửa.",
+    ],
+    events: night35 as unknown as HorrorEvent[],
+    start: { x: 0, z: 0.3, yaw: 180 },
+    flags: ["has_key", "bedroom_open"],
+    photo: 4,
+    rain: false,
+    past: true,
+    eye: 1.05,
   },
   4: {
     id: 4,
     title: "Đêm cuối",
     intro: [
-      "Hình nhân cháy hết lúc gần sáng. Trong ảnh, chỗ người thứ năm chỉ còn một vết xém.",
+      "Tôi tỉnh dậy cạnh đống tro. Trong ảnh, chỗ người thứ năm chỉ còn một vết xém.",
       "Rồi trời hửng. Ngoài cổng có ai đó đứng đợi, mặc cái áo sơ mi trắng cũ của tôi.",
       "Người đó quay lại nhìn tôi. Gương mặt đó là của tôi.",
     ],

@@ -1,4 +1,4 @@
-import { Logger } from "@babylonjs/core";
+import { Logger } from "./babylon";
 import { Game } from "./core/Game";
 
 // Hiện lỗi ngay trên màn hình để người chơi thử chỉ cần chụp ảnh gửi lại, không phải mở console.

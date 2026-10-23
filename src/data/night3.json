@@ -32,7 +32,19 @@
       },
       {
         "type": "objective",
-        "text": "Đọc tờ giấy để trên bàn thờ"
+        "text": "Đọc tờ giấy để trên bàn thờ",
+        "hints": [
+          "Giấy của thầy Sáu nằm trên mặt bàn thờ, phía trước ảnh thờ."
+        ]
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "message",
+        "from": "Cô Ba",
+        "text": "Thầy Sáu dặn cô nhắn Út: đêm nay đừng quay lưng với cái gì bằng giấy. Cô hỏi “cái gì bằng giấy” thì thầy không nói."
       }
     ]
   },
@@ -48,7 +60,12 @@
       {
         "type": "objective",
         "text": "Tìm áo cũ, ảnh của Út và hộp diêm (0/3)",
-        "glitch": "Quay lại nhìn đi"
+        "glitch": "Quay lại nhìn đi",
+        "hints": [
+          "Thầy Sáu ghi rõ: áo trong tủ áo, ảnh trong cái rương trên gác kho đồ mã (cầu thang trong tiệm Phúc Ký, cửa ở hành lang), diêm trong hộp bánh quy dưới bếp.",
+          "Hình nhân chỉ nhích khi không ai nhìn. Đi lùi, rọi đèn pin ({flashlight}) vào con gần nhất.",
+          "Đèn chập chờn hay mất điện là lúc chúng lao tới. Đứng yên và nhìn thẳng vào chúng tới khi đèn sáng lại."
+        ]
       },
       {
         "type": "wait",
@@ -138,7 +155,7 @@
       },
       {
         "type": "subtitle",
-        "text": "Mất điện. Đèn pin — F.",
+        "text": "Mất điện. Đèn pin — {flashlight}.",
         "duration": 3
       },
       {
@@ -206,6 +223,35 @@
     ]
   },
   {
+    "id": "attic_enter3",
+    "when": {
+      "all": [
+        "been_attic",
+        "awake"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "subtitle",
+        "text": "Trên gác cũng có hình nhân. Hai con, đứng giữa lối đi như đang đợi.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "subtitle",
+        "text": "Kệ đầu hình nhân… lúc nãy mặt tụi nó đâu có quay ra lối đi.",
+        "duration": 4
+      }
+    ]
+  },
+  {
     "id": "blackout_final",
     "comment": "Đủ đồ rồi thì mất điện hẳn: phải ra vườn trong bóng tối, chỉ còn đèn pin.",
     "when": {
@@ -221,7 +267,11 @@
     "actions": [
       {
         "type": "objective",
-        "text": "Ra vườn sau: mặc áo, dán ảnh cho hình nhân thế mạng rồi đốt"
+        "text": "Ra vườn sau: mặc áo, dán ảnh cho hình nhân thế mạng rồi đốt",
+        "hints": [
+          "Hình nhân thế mạng đứng trên đống rơm ở vườn sau — ra bằng cửa sau cuối bếp.",
+          "Tương tác một lần để mặc áo và dán ảnh, thêm một lần nữa để đốt."
+        ]
       },
       {
         "type": "subtitle",
@@ -269,7 +319,10 @@
       },
       {
         "type": "objective",
-        "text": "Đốt hình nhân thế mạng"
+        "text": "Đốt hình nhân thế mạng",
+        "hints": [
+          "Có diêm rồi thì tương tác với hình nhân thế mạng thêm một lần nữa."
+        ]
       }
     ]
   },
@@ -326,8 +379,8 @@
       {
         "type": "ending",
         "title": "Đêm thứ ba",
-        "text": "Hình nhân cháy hết lúc gần sáng. Trên tấm ảnh thờ, chỗ người thứ năm đứng chỉ còn một vết cháy xém.\nNhưng khi trời hửng, ngoài cổng có ai đó đứng đợi — mặc cái áo sơ mi trắng cũ của bạn.",
-        "next": 4
+        "text": "Hình nhân cháy hết lúc gần sáng. Trên tấm ảnh thờ, chỗ người thứ năm đứng chỉ còn một vết cháy xém.\nĐồ đốt thì xuống dưới kia. Cái áo sơ mi trắng cũ của bạn cũng vậy.\nĐầu ngón tay bạn cháy xém một vệt. Không đau.",
+        "next": 3.5
       }
     ]
   },

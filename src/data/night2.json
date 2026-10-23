@@ -32,7 +32,10 @@
       },
       {
         "type": "objective",
-        "text": "Đọc giấy chú Tư để lại"
+        "text": "Đọc giấy chú Tư để lại",
+        "hints": [
+          "Tờ giấy nằm trên tủ đầu giường, ngay cạnh giường bà."
+        ]
       }
     ]
   },
@@ -46,11 +49,118 @@
     "actions": [
       {
         "type": "objective",
-        "text": "Tìm 3 mảnh chén men lam (0/3)"
+        "text": "Tìm 3 mảnh chén men lam (0/3)",
+        "hints": [
+          "Giấy chú Tư ghi ba chỗ: hũ gạo dưới bếp, bát nhang trên mộ ông (ra cổng sau vườn), dưới giếng. Đọc lại trong sổ tay ({journal}).",
+          "Cửa sau ra vườn ở cuối bếp. Giếng ở ngoài vườn; cổng sau vườn dẫn ra khu mộ nhà mình.",
+          "Mảnh dưới giếng: đứng sát giếng mà kéo gàu, đừng đi xa. Ai gọi từ dưới giếng — kể cả giọng mẹ — cũng đừng trả lời."
+        ]
       },
       {
         "type": "tension",
         "add": 0.1
+      }
+    ]
+  },
+  {
+    "id": "coffin_knock",
+    "comment": "Lật ngược mô-típ ba tiếng gõ: lần này hòm gõ ra ngoài. Gõ lại = có người nhận (bị đuổi).",
+    "when": {
+      "all": [
+        "read_uncle_note"
+      ],
+      "near": "shopCoffins",
+      "nearRadius": 2.2,
+      "none": [
+        "ending",
+        "caught",
+        "hunting"
+      ]
+    },
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 0.6
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "shopCoffins"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.1
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "shopCoffins"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.1
+      },
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "shopCoffins"
+      },
+      {
+        "type": "subtitle",
+        "text": "…Tiếng gõ. Từ bên trong một cỗ hòm.",
+        "duration": 3.5
+      },
+      {
+        "type": "choice",
+        "text": "Gõ lại",
+        "flag": "knocked_back",
+        "seconds": 5
+      }
+    ]
+  },
+  {
+    "id": "coffin_knocked_back",
+    "when": {
+      "all": [
+        "knocked_back"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "sound",
+        "sound": "knock",
+        "at": "shopCoffins"
+      },
+      {
+        "type": "wait",
+        "seconds": 0.8
+      },
+      {
+        "type": "sound",
+        "sound": "sting"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Có người nhận rồi.”",
+        "duration": 3,
+        "voice": true
+      },
+      {
+        "type": "tension",
+        "add": 0.4
+      },
+      {
+        "type": "entity",
+        "do": "alert",
+        "at": "shopCoffins"
+      },
+      {
+        "type": "setFlag",
+        "flag": "hunting"
       }
     ]
   },
@@ -138,10 +248,10 @@
   },
   {
     "id": "rule4",
-    "comment": "Quy tắc 4 — Bóng Sau Lưng: bước chân dừng ngay sau lưng. Quay lại trong 3 giây là chết.",
+    "comment": "Quy tắc 4 — Bóng Sau Lưng: lấy được mảnh chén ở mộ ông, trên đường về thì bước chân dừng ngay sau lưng.",
     "when": {
       "all": [
-        "shard_banana"
+        "shard_grave"
       ],
       "none": [
         "ending",
@@ -246,6 +356,11 @@
         "text": "“Dạ…?”",
         "flag": "answered_well",
         "seconds": 4.5
+      },
+      {
+        "type": "message",
+        "from": "Mẹ",
+        "text": "Mẹ mới tan ca ở xưởng. Bên Đài mưa quá trời. Út ngủ chưa con?"
       },
       {
         "type": "wait",
@@ -434,6 +549,202 @@
     ]
   },
   {
+    "id": "backland_enter",
+    "when": {
+      "all": [
+        "been_backland"
+      ],
+      "none": [
+        "ending"
+      ]
+    },
+    "actions": [
+      {
+        "type": "subtitle",
+        "text": "Sau vườn tối hơn mình nhớ. Lối đất xuyên bụi tre dẫn ra khu mộ nhà mình.",
+        "duration": 4.5
+      }
+    ]
+  },
+  {
+    "id": "grave_ba",
+    "when": {
+      "near": "graveBa",
+      "nearRadius": 3.2,
+      "none": [
+        "ending"
+      ]
+    },
+    "actions": [
+      {
+        "type": "subtitle",
+        "text": "Mộ bà. Đất còn mới. Nhang vẫn cháy đỏ — ai thắp giữa đêm mưa thế này?",
+        "duration": 4.5
+      }
+    ]
+  },
+  {
+    "id": "pond_call",
+    "comment": "Điều dặn số 2 vọng ra ao: giọng con nít gọi xuống nước. Trả lời là phạm.",
+    "when": {
+      "near": "pondJetty",
+      "nearRadius": 2.6,
+      "none": [
+        "ending",
+        "caught",
+        "hunting"
+      ]
+    },
+    "actions": [
+      {
+        "type": "hush",
+        "seconds": 25
+      },
+      {
+        "type": "setFlag",
+        "flag": "pond_called"
+      },
+      {
+        "type": "sound",
+        "sound": "splash",
+        "at": "pond"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "pond"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út ơi… xuống ao chơi với chú.”",
+        "duration": 4,
+        "voice": true
+      },
+      {
+        "type": "choice",
+        "text": "“Chú… Hải?”",
+        "flag": "answered_pond",
+        "seconds": 4.5
+      }
+    ]
+  },
+  {
+    "id": "pond_answered",
+    "when": {
+      "all": [
+        "answered_pond"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "sound",
+        "sound": "sting"
+      },
+      {
+        "type": "beat",
+        "name": "pondRipple"
+      },
+      {
+        "type": "show",
+        "target": "pondFace",
+        "visible": true
+      },
+      {
+        "type": "wait",
+        "seconds": 0.9
+      },
+      {
+        "type": "show",
+        "target": "pondFace",
+        "visible": false
+      },
+      {
+        "type": "subtitle",
+        "text": "“Út trả lời rồi.”",
+        "duration": 3,
+        "voice": true
+      },
+      {
+        "type": "setFlag",
+        "flag": "hunting"
+      },
+      {
+        "type": "tension",
+        "add": 0.35
+      },
+      {
+        "type": "wait",
+        "seconds": 2
+      },
+      {
+        "type": "entity",
+        "do": "alert",
+        "at": "pond"
+      }
+    ]
+  },
+  {
+    "id": "pond_silent",
+    "comment": "Không trả lời: mặt ao gợn lên rồi lặng — và trong tích tắc có một gương mặt con nít dưới nước.",
+    "when": {
+      "all": [
+        "pond_called"
+      ],
+      "none": [
+        "answered_pond",
+        "ending",
+        "caught"
+      ],
+      "visible": "pondWater",
+      "delay": 6
+    },
+    "actions": [
+      {
+        "type": "beat",
+        "name": "pondRipple"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.6
+      },
+      {
+        "type": "show",
+        "target": "pondFace",
+        "visible": true
+      },
+      {
+        "type": "wait",
+        "seconds": 0.45
+      },
+      {
+        "type": "show",
+        "target": "pondFace",
+        "visible": false
+      },
+      {
+        "type": "wait",
+        "seconds": 1.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Giọng con nít. Chú Hải chết đuối ở cái ao này năm lên chín —\nlúc đó còn chưa có mình.",
+        "duration": 5
+      },
+      {
+        "type": "tension",
+        "add": 0.1
+      }
+    ]
+  },
+  {
     "id": "all_shards",
     "comment": "Lớp 3: gom đủ thì nó tới. Phải về bàn thờ trong bóng tối, không được nhìn ảnh thờ.",
     "when": {
@@ -449,7 +760,11 @@
       {
         "type": "objective",
         "text": "Đem chén men lam về đặt lên bàn thờ",
-        "glitch": "Mở cửa cho bà"
+        "glitch": "Mở cửa cho bà",
+        "hints": [
+          "Đặt chén ở bát nhang trên bàn thờ phòng khách — không cần nhìn thẳng vào ảnh thờ.",
+          "Đèn đã tắt: đừng nhìn ảnh thờ. Bị đuổi thì trốn vào tủ áo phòng bà, giữ {breath} để nín thở."
+        ]
       },
       {
         "type": "subtitle",

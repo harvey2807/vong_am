@@ -8,29 +8,169 @@
       { "type": "wait", "seconds": 4.5 },
       { "type": "subtitle", "text": "Bà mất đã bảy ngày. Đêm nay là đầu thất — người ta dặn nhà có người chết thì đêm nay phải ngủ sớm, tắt đèn, đừng để người về thấy mình.", "duration": 7 },
       { "type": "wait", "seconds": 7.5 },
-      { "type": "subtitle", "text": "Chú Tư bảo bà có để lại gì đó trên bàn thờ.", "duration": 5 },
-      { "type": "objective", "text": "Xem bà để lại gì trên bàn thờ (phòng khách)" }
+      { "type": "subtitle", "text": "Chú Tư bảo bà có để lại gì đó trên bàn thờ.", "duration": 5 }
+    ]
+  },
+  {
+    "id": "obj_altar",
+    "comment": "Tách khỏi intro: người chơi tới bàn thờ đọc giấy trước khi intro nói xong thì không bị ghi đè việc cần làm mới.",
+    "when": { "none": ["read_rules"], "delay": 13.5 },
+    "actions": [
+      { "type": "objective", "text": "Xem bà để lại gì trên bàn thờ (phòng khách)", "hints": ["Phòng khách ở bên trái hành lang. Bàn thờ áp vào bức tường trong cùng.", "Tờ giấy nằm ngay trên mặt bàn thờ, phía trước ảnh thờ."] }
+    ]
+  },
+  {
+    "id": "intro_phone",
+    "comment": "Dạy phím sổ tay bằng một tin nhắn vui — điện thoại lúc này còn là thứ 'an toàn'.",
+    "when": { "none": ["knocking"], "delay": 19.5 },
+    "actions": [
+      { "type": "message", "from": "Cô Ba", "text": "Út tới nhà chưa con? Nhớ thắp nhang cho bà trước khi ngủ nghe. Mà đừng thắp số chẵn!!" },
+      { "type": "wait", "seconds": 1.5 },
+      { "type": "subtitle", "text": "Nhóm Zalo nhà mình lại nhảy tin. ({journal} — sổ tay và tin nhắn)", "duration": 4.5 }
+    ]
+  },
+  {
+    "id": "gecko_omen",
+    "comment": "Thạch sùng chặc lưỡi ngay sau khi đọc lời bà dặn — điềm 'chuyện vừa nói là thật'. Cũng là lần đầu người chơi nghe tiếng sống của căn nhà.",
+    "when": { "all": ["read_rules"], "delay": 2.5 },
+    "actions": [
+      { "type": "sound", "sound": "gecko", "at": "altarWall" },
+      { "type": "wait", "seconds": 1.8 },
+      { "type": "subtitle", "text": "Thạch sùng chặc lưỡi. Hồi nhỏ bà hay nói: đang nói gì mà nó kêu, là chuyện đó có thật.", "duration": 5 }
     ]
   },
   {
     "id": "obj_key",
+    "comment": "Câu đố hộp bánh quy: mã = ngày giỗ ông (âm lịch, ngày trước tháng sau). Manh mối: trang 2 lời bà dặn, tờ giấy hồng điều cạnh bàn thờ (ngày Rằm bị gạch), lịch bloc dưới bếp (Rằm = 15/7).",
     "when": { "all": ["read_rules"], "none": ["has_key"] },
-    "actions": [{ "type": "objective", "text": "Tìm chìa khóa phòng bà dưới bếp" }]
+    "actions": [
+      { "type": "objective", "text": "Lấy chìa khóa phòng bà trong hộp bánh quy dưới bếp", "hints": ["Tờ giấy của bà có hai trang — lật bằng {left} / {right}. Trang sau nói mã khóa là ngày giỗ ông, ngày trước tháng sau.", "Cạnh bàn thờ, trên tường bên trái, có tờ giấy hồng ghi ngày giỗ của cả nhà theo âm lịch.", "Bà gạch chữ Rằm: ông mất sáng hôm sau đêm Rằm tháng Bảy. Tờ lịch dưới bếp ghi Rằm tháng Bảy là ngày mấy.", "Rằm là ngày 15 → ông mất ngày 16 tháng 7. Mã là 1 6 0 7."] }
+    ]
   },
   {
     "id": "obj_bedroom",
     "when": { "all": ["has_key"], "none": ["read_diary"] },
-    "actions": [{ "type": "objective", "text": "Vào phòng bà xem bà để lại gì" }]
+    "actions": [
+      { "type": "objective", "text": "Vào phòng bà xem bà để lại gì", "hints": ["Phòng bà ở cuối hành lang, cửa bên phải.", "Cuốn sổ tay của bà nằm trên giường."] }
+    ]
+  },
+  {
+    "id": "kitchen_glimpse",
+    "comment": "Bóng đèn bếp vốn hay chập chờn (vô hại). Lần này, đúng lúc nó giật, ngoài hành lang có người đứng nhìn vào. Không có tiếng hù — chỉ có im lặng, và Út tự trấn an.",
+    "when": { "all": ["has_key"], "none": ["voice_heard", "knocking", "ending"], "near": "kitchenTin", "nearRadius": 3.4, "visible": "kitchenDoorway", "delay": 1.5 },
+    "actions": [
+      { "type": "hush", "seconds": 16 },
+      { "type": "lights", "state": "stutter" },
+      { "type": "wait", "seconds": 0.3 },
+      { "type": "entity", "do": "appear", "at": "hallKitchen" },
+      { "type": "wait", "seconds": 0.5 },
+      { "type": "entity", "do": "vanish" },
+      { "type": "tension", "add": 0.1 },
+      { "type": "wait", "seconds": 2.6 },
+      { "type": "subtitle", "text": "…Bóng đèn bếp lại chập chờn. Chỉ là bóng đèn thôi.", "duration": 4, "glitch": "…Ngoài hành lang có người." }
+    ]
+  },
+  {
+    "id": "shop_lure",
+    "comment": "Mồi tò mò: cửa tiệm Phúc Ký (đóng hai mươi năm) tự kêu cót két. Không bắt buộc vào.",
+    "when": { "all": ["read_rules"], "none": ["shop_opened", "knocking", "ending"], "delay": 50 },
+    "actions": [
+      { "type": "sound", "sound": "creak", "at": "shopDoor" },
+      { "type": "wait", "seconds": 1.2 },
+      { "type": "subtitle", "text": "Cửa tiệm của ông vừa kêu cót két. Hai mươi năm nay có ai mở cửa đó đâu.", "duration": 4.5 }
+    ]
+  },
+  {
+    "id": "shop_enter",
+    "when": { "near": "shopMid", "nearRadius": 2.2, "none": ["in_shop"] },
+    "actions": [
+      { "type": "setFlag", "flag": "in_shop" },
+      { "type": "subtitle", "text": "Tiệm trát giấy Phúc Ký. Mùi hồ dán, giấy bản, sơn ta — y như hồi nhỏ.", "duration": 4.5 }
+    ]
+  },
+  {
+    "id": "shop_dolls_turn",
+    "comment": "Ba hình nhân giữa tiệm quay về phía người chơi — đúng lúc người chơi không nhìn. Không tiếng hù.",
+    "when": { "all": ["in_shop"], "none": ["dolls_turned", "knocking", "ending"], "hidden": "shopDolls", "delay": 4 },
+    "actions": [
+      { "type": "beat", "name": "shopDollsLook" },
+      { "type": "setFlag", "flag": "dolls_turned" },
+      { "type": "sound", "sound": "rustle", "at": "shopMid" }
+    ]
+  },
+  {
+    "id": "shop_dolls_seen",
+    "when": { "all": ["dolls_turned"], "none": ["ending", "caught"], "visible": "shopDolls" },
+    "actions": [
+      { "type": "hush", "seconds": 12 },
+      { "type": "wait", "seconds": 0.5 },
+      { "type": "subtitle", "text": "…Lúc nãy tụi nó quay mặt ra cửa ván mà.", "duration": 4, "glitch": "…Tụi nó quay lại nhìn mình." },
+      { "type": "tension", "add": 0.05 }
+    ]
+  },
+  {
+    "id": "attic_steps",
+    "comment": "Âm thanh nói ngược điều mắt thấy: bước chân ngay trên trần, ở một tầng người chơi chưa từng lên.",
+    "when": { "all": ["read_rules"], "none": ["been_attic", "knocking", "ending"], "floor": 0, "delay": 85 },
+    "actions": [
+      { "type": "sound", "sound": "heavyStep", "at": "atticOverhead" },
+      { "type": "wait", "seconds": 0.8 },
+      { "type": "sound", "sound": "heavyStep", "at": "atticOverhead" },
+      { "type": "wait", "seconds": 1 },
+      { "type": "sound", "sound": "creak", "at": "atticOverhead" },
+      { "type": "wait", "seconds": 1.4 },
+      { "type": "subtitle", "text": "Trên trần có tiếng bước chân. Gác kho đồ mã của ông —\ntừ hồi ông mất, đâu còn ai lên đó.", "duration": 5 }
+    ]
+  },
+  {
+    "id": "attic_enter",
+    "when": { "all": ["been_attic"], "none": ["knocking", "ending"] },
+    "actions": [
+      { "type": "subtitle", "text": "Gác kho đồ mã. Mùi giấy cũ với long não. Hồi nhỏ bà cấm mình lên đây.", "duration": 4.5 }
+    ]
+  },
+  {
+    "id": "attic_child_seen",
+    "when": { "all": ["been_attic"], "none": ["child_seen"], "floor": 1, "visible": "atticChild" },
+    "actions": [
+      { "type": "setFlag", "flag": "child_seen" },
+      { "type": "wait", "seconds": 0.8 },
+      { "type": "subtitle", "text": "Một hình nhân thế mạng cỡ con nít, ngồi quay mặt vào góc.", "duration": 4 }
+    ]
+  },
+  {
+    "id": "attic_child_gone",
+    "comment": "Quay lưng đi một lúc, nó rời chỗ: chỉ còn tiếng giấy sột soạt ngay sau lưng.",
+    "when": { "all": ["child_seen"], "none": ["child_gone"], "hidden": "atticCorner", "delay": 3 },
+    "actions": [
+      { "type": "beat", "name": "atticChildGone" },
+      { "type": "setFlag", "flag": "child_gone" },
+      { "type": "sound", "sound": "rustle", "at": "behindPlayer" }
+    ]
+  },
+  {
+    "id": "attic_child_missing",
+    "when": { "all": ["child_gone"], "floor": 1, "visible": "atticCorner" },
+    "actions": [
+      { "type": "hush", "seconds": 15 },
+      { "type": "wait", "seconds": 0.4 },
+      { "type": "subtitle", "text": "…Góc đó trống trơn.", "duration": 3.5 },
+      { "type": "tension", "add": 0.1 }
+    ]
   },
   {
     "id": "obj_wait",
     "when": { "all": ["read_diary"], "none": ["knocking"] },
-    "actions": [{ "type": "objective", "text": "" }]
+    "actions": [
+      { "type": "objective", "text": "" }
+    ]
   },
   {
     "id": "obj_incense",
     "when": { "all": ["knocking"], "none": ["ending"], "delay": 8 },
-    "actions": [{ "type": "objective", "text": "Đừng mở cửa. Thắp nhang cho bà ở bàn thờ" }]
+    "actions": [
+      { "type": "objective", "text": "Đừng mở cửa. Thắp nhang cho bà ở bàn thờ", "hints": ["Bát nhang nằm lệch sang phải trên bàn thờ — thắp được mà không cần nhìn thẳng vào ảnh thờ.", "Đèn đã tắt: đừng nhìn thẳng vào ảnh thờ (điều dặn thứ 3). Bật đèn pin ({flashlight}) thì thấy đường, nhưng nó cũng thấy mình từ xa hơn.", "Bị đuổi thì chạy vào tủ áo trong phòng bà. Khi nó đứng ngoài cửa tủ, giữ {breath} để nín thở."] }
+    ]
   },
   {
     "id": "photo_fifth",
@@ -46,6 +186,7 @@
     "comment": "Lớp 2 — Ám ảnh: giọng bà kể một ký ức không ai biết, phát ngay sau lưng.",
     "when": { "all": ["photo_changed"], "delay": 20 },
     "actions": [
+      { "type": "hush", "seconds": 20 },
       { "type": "sound", "sound": "whisper", "at": "behindPlayer" },
       { "type": "subtitle", "text": "“Út ơi… cái chén men lam bể hôm đó, bà không giận con đâu.”", "duration": 4.5, "voice": true },
       { "type": "wait", "seconds": 5 },
@@ -63,9 +204,21 @@
     ]
   },
   {
+    "id": "grandma_text",
+    "comment": "Điện thoại — giao diện 'an toàn', vui vẻ — bị chiếm: tin nhắn từ Zalo của bà, người đã mất. Ngay trước ba tiếng gõ. Đọc lại sau Đêm cuối: đây là tin bà gửi đêm bà mất, tới trễ bảy ngày.",
+    "when": { "all": ["read_diary", "voice_heard"], "delay": 3 },
+    "actions": [
+      { "type": "message", "from": "Bà", "text": "Út cài then chưa con", "eerie": true },
+      { "type": "wait", "seconds": 2.2 },
+      { "type": "message", "from": "Bà", "text": "bà đứng ngoài cửa nè con", "eerie": true },
+      { "type": "wait", "seconds": 2.4 },
+      { "type": "subtitle", "text": "…Zalo của bà? Giờ gửi 23:58, đêm hai mươi mốt. Đêm bà mất. Điện thoại của bà, chú Tư bỏ theo vô quan tài rồi mà.", "duration": 5.5 }
+    ]
+  },
+  {
     "id": "knock",
-    "comment": "Lớp 3 — Kinh hoàng: một lần, hai lần, ba lần. Rồi đèn tắt.",
-    "when": { "all": ["read_diary", "voice_heard"], "delay": 6 },
+    "comment": "Lớp 3 — Kinh hoàng: một lần, hai lần, ba lần. Rồi đèn tắt. Tiếng sống của căn nhà tắt theo (cờ knocking).",
+    "when": { "all": ["read_diary", "voice_heard"], "delay": 10 },
     "actions": [
       { "type": "sound", "sound": "knock", "at": "frontDoor" },
       { "type": "wait", "seconds": 2.2 },
@@ -88,13 +241,15 @@
       { "type": "setFlag", "flag": "lights_off" },
       { "type": "wait", "seconds": 3 },
       { "type": "sound", "sound": "whisper", "at": "frontDoor" },
-      { "type": "subtitle", "text": "“Út ơi, bà về rồi nè. Mở cửa cho bà.”", "duration": 4.5, "voice": true }
+      { "type": "subtitle", "text": "“Út ơi, bà về rồi nè. Mở cửa cho bà.”", "duration": 4.5, "voice": true },
+      { "type": "wait", "seconds": 5 },
+      { "type": "subtitle", "text": "Đồng hồ quả lắc ngoài hành lang… ngừng kêu từ lúc nào.", "duration": 4 }
     ]
   },
   {
     "id": "shadow_appears",
     "comment": "Tuần 3 — bóng người cuối hành lang. Báo trước bằng hai tiếng bước chân, rồi mới thấy hình.",
-    "when": { "all": ["lights_off"], "none": ["ending", "caught"], "delay": 7 },
+    "when": { "all": ["lights_off"], "none": ["ending", "caught"], "delay": 11 },
     "actions": [
       { "type": "sound", "sound": "heavyStep", "at": "hallEnd" },
       { "type": "wait", "seconds": 0.9 },
@@ -137,7 +292,7 @@
   },
   {
     "id": "knock_again",
-    "when": { "all": ["knocking"], "none": ["ending", "caught", "hunting"], "delay": 30 },
+    "when": { "all": ["knocking"], "none": ["ending", "caught", "hunting"], "delay": 34 },
     "actions": [
       { "type": "sound", "sound": "knock", "at": "frontDoor" },
       { "type": "wait", "seconds": 0.45 },
@@ -181,13 +336,16 @@
   },
   {
     "id": "ending_good",
+    "comment": "Thắp nhang xong: tiếng gõ ngừng, rồi — sau một nhịp im lặng — thạch sùng kêu lại. Tiếng sống trở về = an toàn.",
     "when": { "all": ["lit_incense"], "none": ["opened_front_door", "caught"] },
     "actions": [
       { "type": "setFlag", "flag": "ending" },
       { "type": "entity", "do": "vanish" },
       { "type": "subtitle", "text": "Khói nhang bốc thẳng lên. Tiếng gõ ngừng hẳn.", "duration": 5 },
       { "type": "tension", "add": -0.6 },
-      { "type": "wait", "seconds": 6 },
+      { "type": "wait", "seconds": 3.5 },
+      { "type": "sound", "sound": "gecko", "at": "altarWall" },
+      { "type": "wait", "seconds": 3 },
       { "type": "ending", "title": "Đêm thứ nhất", "text": "Bạn đã không mở cửa. Nhưng trên tấm ảnh thờ, người thứ năm đã đứng gần hơn một chút.", "next": 2 }
     ]
   },

@@ -13,8 +13,9 @@ import {
   ShadowGenerator,
   StandardMaterial,
   Vector3,
-} from "@babylonjs/core";
+} from "../babylon";
 import { AudioSystem } from "../audio/AudioSystem";
+import { Ambience } from "../audio/Ambience";
 import { HorrorDirector } from "../director/HorrorDirector";
 import type { DirectorContext, EntityCommand, LightState, SoundId, TvState } from "../director/types";
 import { Knocker } from "../entity/Knocker";
@@ -25,7 +26,10 @@ import { Scarecrows } from "../entity/Scarecrow";
 import { ALTAR_EFFIGIES } from "../world/Funeral";
 import { InteractionSystem } from "../interaction/Interaction";
 import { Player } from "../player/Player";
-import { Hud, type Note } from "../ui/Hud";
+import { Hud, type JournalMessage, type JournalView, type Note } from "../ui/Hud";
+import messages from "../data/messages.json";
+import items from "../data/items.json";
+import { isKey, label, withKeys } from "./Keybinds";
 import { Fx } from "../world/Fx";
 import { House, type HidingSpot } from "../world/House";
 import {
@@ -58,6 +62,19 @@ const LOOK_ANGLE = (10 * Math.PI) / 180;
  * nhiều GPU chỉ cho 12 block → quá con số này là shader không biên dịch được (màn hình đen / vật biến mất).
  */
 const MAX_LIGHTS_PER_MATERIAL = 8;
+/** Có một trong các cờ này (mà chưa hết đêm) = căn nhà hết yên: tiếng sống tắt, đồng hồ ngừng. */
+const UNSAFE_FLAGS = ["knocking", "hunting", "lights_off", "awake", "stared", "answered_well", "answered_field"];
+const WARNED_KEY = "vongam.warned";
+
+/** Khóa số theo góc nhìn của thế giới (House): Game lo phần khóa/mở điều khiển. */
+export interface LockRequest {
+  title: string;
+  sub: string;
+  digits: number;
+  onTry: (code: string) => string | null;
+  onTurn?: () => void;
+  onSolved: () => void;
+}
 
 type State = "menu" | "paused" | "playing" | "ended";
 
@@ -88,8 +105,23 @@ export class Game implements DirectorContext {
   private breathHeld = 0;
   private breathSlip = 0;
   private breathHinted = false;
+  /** Trốn trong hòm: nó đã gõ nắp lần này chưa, còn mấy tiếng gõ, nhịp gõ. */
+  private lidKnocked = false;
+  private lidKnocks = 0;
+  private lidKnockTimer = 0;
+  /** Số lần đã nằm vào hòm (lần thứ ba thì nắp bị đóng đinh), số lần đã đẩy nắp. */
+  private coffinHides = 0;
+  private lidPushes = 0;
   private shadows!: ShadowGenerator;
   private readonly shadowCasters: AbstractMesh[] = [];
+  readonly ambience: Ambience;
+  /** Giấy đã đọc trong đêm này (đọc lại trong sổ tay), theo thứ tự đọc. */
+  private readonly papers = new Map<string, Note>();
+  /** Tin nhắn tới trong đêm (sau phần lịch sử có sẵn của nhóm). */
+  private readonly liveMessages: JournalMessage[] = [];
+  /** Gợi ý của việc cần làm hiện tại, và đã mở bao nhiêu bậc. */
+  private hints: string[] = [];
+  private hintsShown = 0;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.engine = new Engine(canvas, false, { stencil: false, audioEngine: false });
@@ -107,6 +139,14 @@ export class Game implements DirectorContext {
     this.player = new Player(scene, this.audio);
     this.fx = new Fx(scene, this.player.camera);
     this.house = new House(scene, this);
+    this.player.surfaceAt = (x, z, y) => this.house.surfaceAt(x, z, y);
+    this.player.stairHeightAt = (x, z, y) => this.house.stairHeight(x, z, y);
+    // Xe máy chạy ngang đầu ngõ (Mở đầu) hay ngoài đường trước cửa nhà (các đêm trong nhà).
+    this.ambience = new Ambience(this.audio, {
+      house: !this.house.fields,
+      fields: !!this.house.fields,
+      roadZ: this.house.fields ? undefined : this.level.id === 0 ? -44 : -14,
+    });
     this.director = new HorrorDirector(this.level.events, this);
     this.director.onLog = (kind, name) => this.playtest.log(kind, name);
     this.interaction = new InteractionSystem(scene, this.player.camera, this.hud);
@@ -184,9 +224,17 @@ export class Game implements DirectorContext {
       this.breathSlip = 0;
       return;
     }
+    const coffin = this.hidingSpot?.kind === "coffin";
+    // Trong hòm: nó gõ ba tiếng lên nắp, như hỏi có ai nhận chưa.
+    if (coffin && !this.lidKnocked) {
+      this.lidKnocked = true;
+      this.lidKnocks = 3;
+      this.lidKnockTimer = 0.6;
+      this.hud.subtitle("Nó gõ lên nắp hòm. Đừng gõ lại.", 3.5);
+    }
     if (!this.breathHinted) {
       this.breathHinted = true;
-      this.hud.subtitle("Nó đứng ngay ngoài cửa tủ. Nín thở…", 3.5);
+      this.hud.subtitle(coffin ? "Nó đứng ngay cạnh hòm. Nín thở…" : "Nó đứng ngay ngoài cửa tủ. Nín thở…", 3.5);
     }
     if (this.breathKey) {
       this.breathHeld += dt;
@@ -208,13 +256,19 @@ export class Game implements DirectorContext {
   private applyLevel(): void {
     const lv = this.level;
     const s = lv.start;
-    this.player.camera.position.set(s.x, 1.6, s.z);
+    const eye = lv.eye ?? 1.6;
+    this.player.setEyeHeight(eye);
+    this.player.camera.position.set(s.x, eye, s.z);
     this.player.camera.rotation.set(0, (s.yaw * Math.PI) / 180, 0);
     for (const f of lv.flags) this.director.set(f);
     // Đã gom đủ di vật từ những lần chơi trước: Đêm cuối mở Kết thật.
     if (allRelicsFound()) this.director.set("all_relics");
     this.house.setPhoto(lv.photo);
-    if (lv.rain) this.fx.startRain(new Vector3(6.2, 0, -9), new Vector3(13.2, 0, 3.1));
+    if (lv.rain) {
+      this.fx.startRain(new Vector3(6.2, 0, -9), new Vector3(13.2, 0, 3.1));
+      // Khoảng đất sau vườn rộng: mưa bám theo người chơi khi ra tới đó.
+      if (this.house.backland) this.fx.startRoamingRain();
+    }
     document.title = `VONG ÂM — ${lv.title}`;
   }
 
@@ -227,12 +281,17 @@ export class Game implements DirectorContext {
     const meshes = this.scene.meshes;
     for (const m of meshes) m.computeWorldMatrix(true);
     // Thứ di chuyển (thực thể, hình nhân dạng ảnh "…Sprite") phải được mọi đèn chiếu tới.
-    const roams = (m: AbstractMesh) => m.name.startsWith("knocker") || m.name.endsWith("Sprite");
+    // (Hình nhân "effigy…" đi khắp nhà ở Đêm 3–4 nên cũng phải được mọi đèn chiếu.)
+    const roams = (m: AbstractMesh) => m.name.startsWith("knocker") || m.name.endsWith("Sprite") || m.name.startsWith("effigy");
+    // Gác kho đồ mã: đèn nhà dưới không xuyên được trần; đèn trên gác ("gac…") chỉ chiếu đồ trên gác.
+    const onAttic = (m: AbstractMesh) => m.name.startsWith("gac");
     const knocker = meshes.filter(roams);
     for (const light of this.scene.lights) {
       if (light instanceof PointLight) {
+        const atticLight = light.name.startsWith("gac");
         light.includedOnlyMeshes = meshes.filter((m) => {
           if (roams(m)) return true;
+          if (onAttic(m) !== atticLight) return false;
           const s = m.getBoundingInfo().boundingSphere;
           return Vector3.Distance(s.centerWorld, light.position) < light.range + s.radiusWorld;
         });
@@ -281,23 +340,34 @@ export class Game implements DirectorContext {
       this.pendingChoice.left -= dt;
       if (this.pendingChoice.left <= 0) this.pendingChoice = undefined;
     }
-    if (this.hud.readerOpen) {
+    if (this.hud.busy) {
       this.interaction.clear();
     } else {
       this.player.update(dt);
       if (this.pendingChoice && this.knocker.state !== "caught") this.hud.setPrompt(this.pendingChoice.text, true);
-      else if (this.player.hidden && this.knocker.listeningAtWardrobe) this.hud.setPrompt("Giữ để nín thở", false, "Space");
-      else if (this.player.hidden) this.hud.setPrompt(this.knocker.state === "caught" ? null : "Ra khỏi tủ");
+      else if (this.player.hidden && this.knocker.listeningAtWardrobe) this.hud.setPrompt("Giữ để nín thở", false, label("breath"));
+      else if (this.player.hidden) this.hud.setPrompt(this.knocker.state === "caught" ? null : this.exitPrompt());
       else this.interaction.update();
     }
     this.playtest.update(dt, cam.position.x, cam.position.z);
     this.updateBreath(dt);
+    if (this.lidKnocks > 0 && (this.lidKnockTimer -= dt) <= 0) {
+      this.lidKnocks--;
+      this.lidKnockTimer = 0.75;
+      this.audio.play("knock", this.hidingSpot?.inside);
+      this.hud.uiFlicker();
+    }
     this.stalker.update(dt);
     this.dolls.update(dt);
     this.crows.update(dt);
-    const fields = this.house.fields;
-    this.player.inWater = !!fields && fields.inWater(cam.position.x, cam.position.z);
+    this.player.inWater = this.house.inWater(cam.position.x, cam.position.z);
+    // Đèn pin chập chờn khi Người Gõ Cửa ở gần cùng tầng (hoặc đang đuổi).
+    this.player.interference = this.knocker.state === "inactive" || this.knocker.floor !== this.player.floor ? 0 : this.knocker.threat;
     this.fx.update(this.player.flashlightOn, this.house.lightsOn);
+    this.fx.updateRoamingRain(cam.position, cam.position.x > 13.3);
+    // Cờ khám phá: kịch bản dùng để mở chuyện ở khu mới.
+    if (this.player.floor === 1) this.director.set("been_attic");
+    if (cam.position.x > 13.6) this.director.set("been_backland");
     if (this.level.rain) {
       const outdoor = cam.position.x > 6.05;
       if (outdoor !== this.outdoor) {
@@ -309,6 +379,11 @@ export class Game implements DirectorContext {
     this.knocker.update(dt);
     this.director.update(dt);
     this.audio.setTension(Math.max(this.director.tension, this.knocker.threat, this.dolls.threat, this.crows.threat));
+    // Căn nhà còn yên thì có tiếng sống; hết yên thì im bặt và đồng hồ quả lắc ngừng. Hết đêm (đã an toàn) thì sống lại.
+    const unsafe = !this.director.has("ending") && UNSAFE_FLAGS.some((f) => this.director.has(f));
+    const calm = !unsafe && this.knocker.state === "inactive" && this.director.tension < 0.35;
+    this.house.clockStopped = unsafe;
+    this.ambience.update(dt, calm, cam.globalPosition);
     // Viền tối-đỏ chỉ hiện khi thật sự bị đe dọa (bị đuổi, hình nhân áp sát) — không phải lúc nào cũng có.
     const danger = Math.max(
       this.knocker.state === "chase" ? 1 : this.knocker.state === "investigate" ? 0.45 : 0,
@@ -353,18 +428,38 @@ export class Game implements DirectorContext {
       this.state = "paused";
       this.lock();
     };
+    // Lần đầu chơi: cảnh báo nội dung trước màn chuyển chương (chỉ một lần cho mỗi trình duyệt).
+    const chapter = () => {
+      let warned = false;
+      try {
+        warned = localStorage.getItem(WARNED_KEY) === "1";
+      } catch {
+        // Không đọc được bộ nhớ: hiện cảnh báo mỗi lần — an toàn hơn là bỏ qua.
+      }
+      const show = () => this.hud.showChapter(this.level, begin);
+      if (warned) return show();
+      this.hud.hideStart();
+      this.hud.showWarning(() => {
+        try {
+          localStorage.setItem(WARNED_KEY, "1");
+        } catch {
+          // bỏ qua
+        }
+        show();
+      });
+    };
     // Đêm này được mở từ màn kết thúc đêm trước (hoặc "Thử lại") → vào thẳng màn chuyển chương.
     if (takeChapterFlag(this.level.id)) {
-      this.hud.showChapter(this.level, begin);
+      chapter();
     } else {
       this.hud.showMenu({
         saved: LEVELS[savedNight()],
         completed: hasCompleted(),
         nights: Object.values(LEVELS).sort((a, b) => a.id - b.id),
-        onPlay: (n) => (n === this.level.id ? this.hud.showChapter(this.level, begin) : goToChapter(n)),
+        onPlay: (n) => (n === this.level.id ? chapter() : goToChapter(n)),
         onNewGame: () => {
           resetProgress();
-          if (this.level.id === 0) this.hud.showChapter(this.level, begin);
+          if (this.level.id === 0) chapter();
           else goToChapter(0);
         },
       });
@@ -392,20 +487,30 @@ export class Game implements DirectorContext {
     });
 
     window.addEventListener("keyup", (e) => {
-      if (e.code === "Space") this.breathKey = false;
+      if (isKey("breath", e.code)) this.breathKey = false;
     });
     window.addEventListener("blur", () => (this.breathKey = false));
     window.addEventListener("keydown", (e) => {
-      if (e.code === "Space") this.breathKey = true;
-      if (this.state !== "playing" || e.repeat) return;
-      if (e.code === "KeyE") {
-        if (this.pendingChoice && !this.hud.readerOpen) {
+      if (isKey("breath", e.code)) this.breathKey = true;
+      // Tắt tiếng dùng được ở mọi màn hình (kể cả menu, tạm dừng).
+      if (e.code === "KeyM" && !e.repeat && !(e.target instanceof HTMLTextAreaElement)) {
+        this.audio.setMuted(!this.audio.isMuted);
+        this.hud.toast("Âm thanh", this.audio.isMuted ? "Đã tắt tiếng — nhấn M để bật lại." : "Đã bật tiếng.", false, true);
+      }
+      // Hud đã xử lý phím này (khóa số, sổ tay) — không làm thêm gì nữa.
+      if (this.state !== "playing" || e.repeat || e.defaultPrevented) return;
+      if (isKey("journal", e.code)) {
+        e.preventDefault();
+        if (!this.hud.busy && this.knocker.state !== "caught") this.openJournal();
+      } else if (isKey("interact", e.code)) {
+        if (this.pendingChoice && !this.hud.busy) {
           this.director.set(this.pendingChoice.flag);
           this.pendingChoice = undefined;
         } else if (this.hud.readerOpen) this.closeReader();
+        else if (this.hud.busy) return;
         else if (this.player.hidden) this.leaveHiding();
         else this.interaction.tryInteract();
-      } else if (e.code === "KeyF") {
+      } else if (isKey("flashlight", e.code)) {
         this.player.toggleFlashlight();
         this.playtest.counts.flashlight++;
       }
@@ -418,6 +523,8 @@ export class Game implements DirectorContext {
   }
 
   openNote(note: Note): void {
+    // Ghi vào sổ tay để đọc lại (đọc lại không làm mực lạ hiện lần nữa — Hud tự nhớ theo lần mở).
+    this.papers.set(note.title, note);
     // Dòng mực lạ tự viết: tiếng giấy sột soạt + tiếng thì thầm ngay sát tai.
     this.hud.openNote(note, () => {
       this.audio.play("rustle");
@@ -432,20 +539,110 @@ export class Game implements DirectorContext {
     this.player.disable();
   }
 
+  /** Khóa số: khóa điều khiển trong lúc xoay vòng số; đóng lại (bỏ đi hay mở được) thì trả điều khiển. */
+  openLock(req: LockRequest): void {
+    this.player.disable();
+    this.interaction.clear();
+    this.hud.openLock({
+      title: req.title,
+      sub: req.sub,
+      digits: req.digits,
+      onTry: req.onTry,
+      onTurn: req.onTurn,
+      onClose: (solved) => {
+        if (solved) req.onSolved();
+        if (this.state === "playing" && !this.hud.busy) this.player.enable();
+      },
+    });
+  }
+
+  /** Sổ tay: việc cần làm + gợi ý + đồ mang theo, giấy đã đọc, tin nhắn. Thực thể vẫn đi trong lúc mở. */
+  private openJournal(): void {
+    this.player.disable();
+    this.interaction.clear();
+    this.playtest.log("action", "journal");
+    this.hud.openJournal(
+      () => this.journalView(),
+      () => {
+        this.hintsShown = Math.min(this.hints.length, this.hintsShown + 1);
+        this.playtest.log("action", `hint:${this.hintsShown}`);
+      },
+      () => {
+        if (this.state === "playing" && !this.hud.busy) this.player.enable();
+      },
+      this.liveMessages.some((m) => !m.self) && !this.seenMessages ? 2 : 0,
+    );
+    this.seenMessages = true;
+  }
+
+  /** Đã mở sổ tay từ lúc có tin mới chưa (có tin chưa xem thì mở thẳng trang tin nhắn). */
+  private seenMessages = true;
+
+  private journalView(): JournalView {
+    const thread = messages.thread
+      .filter((m) => m.night <= this.level.id)
+      .map((m) => ({ from: m.from, text: m.text, self: m.from === "Út" }));
+    return {
+      objective: this.hud.objective,
+      hints: this.hints.slice(0, this.hintsShown).map(withKeys),
+      hintsLeft: this.hints.length - this.hintsShown,
+      items: items.items.filter((it) => this.director.has(it.flag) && !this.director.has(it.until)).map((it) => ({ label: it.label, note: it.note })),
+      papers: [...this.papers.values()].map((note) => ({ title: note.title, open: () => this.openNote(note) })),
+      group: messages.group,
+      messages: [...thread, ...this.liveMessages],
+    };
+  }
+
   hide(spot: HidingSpot): void {
     // Báo thực thể TRƯỚC khi dời camera, để nó còn kịp "thấy" người chơi chui vào.
     this.knocker.onPlayerHide(spot);
     this.hidingSpot = spot;
-    this.player.hide(spot.inside, spot.insideYaw);
-    this.hud.setHiding(true);
+    this.player.hide(spot.inside, spot.insideYaw, spot.insidePitch);
+    this.hud.setHiding(true, spot.kind);
     this.audio.play("creak", spot.inside);
     this.director.set("hid");
     this.playtest.counts.hides++;
+    this.lidKnocked = false;
+    if (spot.kind === "coffin") {
+      // Lần thứ ba nằm vào hòm: có tiếng đóng đinh trên nắp. Từ đó muốn ra phải đẩy nắp.
+      this.coffinHides++;
+      this.lidPushes = 0;
+      if (this.coffinHides === 3) {
+        this.audio.play("knock", spot.inside);
+        this.hud.subtitle("Cộc… cộc… Có tiếng đóng đinh trên nắp hòm.", 4);
+      }
+    }
+  }
+
+  /** Hòm đã bị đóng đinh (từ lần trốn thứ ba): phải đẩy nắp nhiều lần mới ra được. */
+  private static readonly LID_PUSHES = 6;
+
+  private exitPrompt(): string | null {
+    const spot = this.hidingSpot;
+    if (!spot) return null;
+    if (spot.exit === null) return null;
+    if (spot.kind === "coffin" && this.coffinHides >= 3) return `Đẩy nắp hòm (${this.lidPushes}/${Game.LID_PUSHES})`;
+    return spot.exit ?? "Ra khỏi tủ";
   }
 
   private leaveHiding(): void {
     const spot = this.hidingSpot;
-    if (!spot || this.knocker.state === "caught") return;
+    if (!spot || this.knocker.state === "caught" || spot.exit === null) return;
+    if (spot.kind === "coffin") {
+      // Đang bị gõ nắp mà động đậy = gõ trả lời.
+      if (this.knocker.listeningAtWardrobe) {
+        this.audio.play("knock", spot.inside);
+        this.hud.subtitle("…Mình vừa gõ lại.", 2.5);
+        this.knocker.hearHiddenPlayer();
+        return;
+      }
+      if (this.coffinHides >= 3 && this.lidPushes < Game.LID_PUSHES) {
+        this.lidPushes++;
+        this.audio.play("rattle", spot.inside);
+        if (this.lidPushes < Game.LID_PUSHES) return;
+      }
+      this.house.coffins?.closeShopLid(false);
+    }
     this.hidingSpot = undefined;
     this.player.unhide(spot.outside, spot.outsideYaw);
     this.hud.setHiding(false);
@@ -462,21 +659,24 @@ export class Game implements DirectorContext {
     this.director.set("caught");
   }
 
+  /** Đóng giấy đang đọc — và khóa số, sổ tay nếu đang mở (tạm dừng, bị bắt, hết đêm). */
   private closeReader(): void {
-    if (!this.hud.readerOpen) return;
-    this.hud.closeReader();
+    if (!this.hud.busy) return;
+    this.hud.closeOverlays();
     if (this.state === "playing") this.player.enable();
   }
 
   // ---------------------------------------------------------------- DirectorContext
 
   subtitle(text: string, duration: number, voice: boolean, glitch?: string): void {
-    this.hud.subtitle(text, duration, voice, glitch);
+    this.hud.subtitle(withKeys(text), duration, voice, glitch);
   }
 
   playSound(sound: SoundId, at?: string): void {
     const pos = at === "behindPlayer" ? this.player.behind(1.3) : at ? this.house.anchors.get(at) : undefined;
     this.audio.play(sound, pos);
+    // Cú hù có chủ đích: góc nhìn giật một nhịp.
+    if (sound === "sting") this.player.punch(0.14);
     // Tiếng gõ cửa "chạm" vào cả giao diện.
     if (sound === "knock") this.hud.uiFlicker();
   }
@@ -495,8 +695,31 @@ export class Game implements DirectorContext {
     this.knocker.command(cmd, at);
   }
 
-  objective(text: string, glitch?: string): void {
-    this.hud.setObjective(text, glitch);
+  objective(text: string, glitch?: string, hints?: string[]): void {
+    this.hud.setObjective(withKeys(text), glitch && withKeys(glitch));
+    // Việc mới thì gợi ý mới (kể cả không có gợi ý nào).
+    this.hints = hints ?? [];
+    this.hintsShown = 0;
+  }
+
+  message(from: string, text: string, eerie = false): void {
+    this.liveMessages.push({ from, text, self: false, eerie });
+    this.seenMessages = false;
+    this.audio.play("buzz");
+    this.hud.toast(from, text, eerie);
+    this.playtest.log("action", `message:${from}`);
+  }
+
+  hush(seconds: number): void {
+    this.ambience.hush(seconds);
+  }
+
+  beat(name: string): void {
+    if (!this.house.beat(name) && import.meta.env.DEV) console.warn(`[director] beat không ai nhận: ${name}`);
+  }
+
+  playerFloor(): 0 | 1 {
+    return this.player.floor;
   }
 
   door(name: string, open: boolean): void {

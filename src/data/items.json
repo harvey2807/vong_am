@@ -1,0 +1,65 @@
+{
+  "comment": "Đồ mang theo, hiện trong sổ tay. Có cờ `flag` mà chưa có cờ `until` (đã dùng) thì hiện.",
+  "items": [
+    {
+      "flag": "has_door_key",
+      "until": "entered_house",
+      "label": "Chìa khóa cửa nhà bà",
+      "note": "Dưới chậu bông, đúng chỗ chú Tư nói."
+    },
+    {
+      "flag": "has_key",
+      "until": "bedroom_open",
+      "label": "Chìa khóa phòng bà",
+      "note": "Bà khóa trong hộp bánh quy, cùng kim chỉ."
+    },
+    {
+      "flag": "shard_rice",
+      "until": "bowl_placed",
+      "label": "Mảnh chén men lam (hũ gạo)",
+      "note": "Cạnh sắc. Cứa vào tay mà không chảy máu."
+    },
+    {
+      "flag": "shard_grave",
+      "until": "bowl_placed",
+      "label": "Mảnh chén men lam (mộ ông)",
+      "note": "Vùi trong tro nhang còn ấm."
+    },
+    {
+      "flag": "shard_well",
+      "until": "bowl_placed",
+      "label": "Mảnh chén men lam (giếng)",
+      "note": "Lạnh buốt, như vừa ở dưới nước rất lâu."
+    },
+    {
+      "flag": "has_shirt",
+      "until": "effigy_dressed",
+      "label": "Áo sơ mi trắng cũ của Út",
+      "note": "Ấm như vừa có người mặc."
+    },
+    {
+      "flag": "has_photo",
+      "until": "effigy_dressed",
+      "label": "Ảnh thẻ của Út",
+      "note": "Sau lưng bà ghi: “Út — đừng để nó lấy.”"
+    },
+    {
+      "flag": "has_matches",
+      "until": "burned",
+      "label": "Hộp diêm Thống Nhất",
+      "note": "Còn đúng ba que."
+    },
+    {
+      "flag": "has_scissors",
+      "until": "fifth_burned",
+      "label": "Kéo cắt vải của bà",
+      "note": "Lưỡi kéo lạnh buốt."
+    },
+    {
+      "flag": "has_family_photo",
+      "until": "fifth_burned",
+      "label": "Ảnh thờ gia đình",
+      "note": "Người thứ năm đang nhìn mình."
+    }
+  ]
+}

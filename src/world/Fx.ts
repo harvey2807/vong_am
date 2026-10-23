@@ -1,4 +1,4 @@
-import { Color4, Mesh, MeshBuilder, ParticleSystem, Scene, Texture, UniversalCamera, Vector3 } from "@babylonjs/core";
+import { Color4, Mesh, MeshBuilder, ParticleSystem, Scene, Texture, UniversalCamera, Vector3 } from "../babylon";
 import { softDotUrl } from "./decorTextures";
 
 /**
@@ -148,6 +148,44 @@ export class Fx {
     smoke.direction2 = new Vector3(0.3, 1.5, 0.3);
     smoke.blendMode = ParticleSystem.BLENDMODE_STANDARD;
     smoke.start();
+  }
+
+  /**
+   * Mưa theo người chơi: vùng mưa cố định không phủ được khoảng đất rộng sau vườn, nên ở đó mưa rơi trong một hộp
+   * 18×18 m quanh camera (trong nhà thì tắt — hạt mưa không biết có mái).
+   */
+  startRoamingRain(): void {
+    const rain = new ParticleSystem("roamingRain", 2600, this.scene);
+    rain.particleTexture = this.dot;
+    rain.emitter = new Vector3(0, 0, 0);
+    rain.minEmitBox = new Vector3(-9, 5, -9);
+    rain.maxEmitBox = new Vector3(9, 6, 9);
+    rain.color1 = new Color4(0.6, 0.68, 0.8, 0.35);
+    rain.color2 = new Color4(0.5, 0.58, 0.7, 0.2);
+    rain.colorDead = new Color4(0.5, 0.58, 0.7, 0);
+    rain.minSize = 0.015;
+    rain.maxSize = 0.025;
+    rain.minScaleY = 12;
+    rain.maxScaleY = 18;
+    rain.minLifeTime = 0.55;
+    rain.maxLifeTime = 0.65;
+    rain.emitRate = 0;
+    rain.direction1 = new Vector3(-0.6, -10, 0.2);
+    rain.direction2 = new Vector3(-0.4, -10, 0.4);
+    rain.billboardMode = ParticleSystem.BILLBOARDMODE_STRETCHED;
+    rain.blendMode = ParticleSystem.BLENDMODE_ADD;
+    rain.start();
+    this.roamingRain = rain;
+  }
+
+  private roamingRain?: ParticleSystem;
+
+  /** `active`: người chơi đang ở ngoài trời rộng — mưa bám theo vị trí `at`. */
+  updateRoamingRain(at: Vector3, active: boolean): void {
+    const r = this.roamingRain;
+    if (!r) return;
+    (r.emitter as Vector3).set(at.x, 0, at.z);
+    r.emitRate = active ? 2600 : 0;
   }
 
   update(flashlightOn: boolean, lightsOn: boolean): void {

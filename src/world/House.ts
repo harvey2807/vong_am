@@ -11,24 +11,43 @@ import {
   Texture,
   TransformNode,
   Vector3,
-} from "@babylonjs/core";
+} from "../babylon";
 import type { LightState, TvState } from "../director/types";
 import type { Game } from "../core/Game";
+import type { Surface } from "../audio/AudioSystem";
+import { comfort } from "../core/Settings";
 import { makeInteractable } from "../interaction/Interaction";
 import { NavGraph } from "../entity/NavGraph";
 import notes from "../data/notes.json";
 import { allRelicsFound, foundRelics, markRelic, RELICS } from "../core/relics";
 import { relicPaperUrl } from "./paperTextures";
+import { gioListUrl } from "./decorTextures";
 import { drawEntityFace, drawPhoto, portraitsReady, tileUrl } from "./textures";
 import { Decor } from "./Decor";
 import { Funeral } from "./Funeral";
 import { Yard } from "./Yard";
 import { Alley } from "./Alley";
 import { Fields } from "./Fields";
+import { PhucKy } from "./PhucKy";
+import { Backland } from "./Backland";
+import { Coffins } from "./Coffins";
+import { Past } from "./Past";
+import { FLOOR1_Y, STAIR_HOLE, type Stair } from "./floors";
 
 const WALL_H = 3;
 const WALL_T = 0.2;
 const DOOR_H = 2.2;
+
+/**
+ * Khóa số quanh hộp bánh quy (Đêm 1): ngày giỗ ông theo âm lịch, ngày trước tháng sau.
+ * Ông mất sáng hôm sau đêm Rằm tháng Bảy → 16/7. Các mã "gần đúng" có câu phản hồi riêng (xem tryTinCode).
+ */
+const SKY_NIGHT = new Color3(0.035, 0.045, 0.065);
+const SKY_INDOOR = new Color3(0.012, 0.012, 0.016);
+const TIN_CODE = "1607";
+const TIN_POS = new Vector3(5.45, 0.95, -2.2);
+/** Ngày giỗ người khác trong nhà — có trong tờ giấy hồng điều, dễ nhầm. */
+const OTHER_GIO = ["2212", "0302", "0805"];
 
 const PHOTO_CAPTIONS: Record<number, string> = {
   4: "Ảnh chụp cả nhà năm 2003. Ông, bà, mẹ… và Út — là mình hồi sáu tuổi.",
@@ -41,9 +60,15 @@ const PHOTO_CAPTIONS: Record<number, string> = {
 export interface HidingSpot {
   inside: Vector3;
   insideYaw: number;
+  /** Ngước/cúi khi ở trong (nằm trong hòm thì nhìn lên nắp). */
+  insidePitch?: number;
   outside: Vector3;
   outsideYaw: number;
   front: Vector3;
+  /** Khung nhìn khi trốn: khe tủ (mặc định), khe nắp hòm, dưới khăn bàn thờ, hoặc đang được bế. */
+  kind?: "wardrobe" | "coffin" | "altar" | "held";
+  /** Chữ gợi ý để ra ngoài; null = không ra được (kịch bản giữ lại). */
+  exit?: string | null;
 }
 
 interface Bulb {
@@ -53,7 +78,7 @@ interface Bulb {
   flickery: boolean;
 }
 
-class Door {
+export class Door {
   open = false;
   private angle = 0;
 
@@ -93,11 +118,15 @@ export class House {
   readonly targets = new Map<string, AbstractMesh>();
   readonly nav = new NavGraph();
   readonly night: number;
+  /** Chương hồi tưởng (năm 2003): chưa có đám tang, tiệm còn mở, bước chân là tiếng giấy. */
+  readonly past: boolean;
   /** Mật độ sương khi đèn sáng (ngoài ngõ mỏng hơn trong nhà). */
   baseFog = 0.14;
   photoVariant = 4;
   decor!: Decor;
-  funeral!: Funeral;
+  funeral?: Funeral;
+  coffins?: Coffins;
+  pastScene?: Past;
   fields?: Fields;
   yard!: Yard;
 
@@ -122,13 +151,26 @@ export class House {
   private lightMode: LightState = "on";
   private flickerTime = 0;
   private flickerTick = 0;
+  /** Giây còn lại của "stutter": chỉ bóng đèn bếp giật. */
+  private stutterTime = 0;
   private time = 0;
+  /** Số lần thử sai khóa số hộp bánh quy — gợi ý rõ dần. */
+  private tinTries = 0;
+  /** Đồng hồ quả lắc ngừng (Game đặt khi căn nhà hết yên). */
+  clockStopped = false;
+  /** Cầu thang (Player nâng camera theo bậc; thực thể leo theo đường này). */
+  readonly stairs: Stair[] = [];
+  /** Tiệm Phúc Ký + gác kho đồ mã (mọi đêm trong nhà). */
+  phucKy?: PhucKy;
+  /** Đất sau vườn: ao, nhà kho, khu mộ (từ Đêm 2, khi cửa sau mở được). */
+  backland?: Backland;
 
   constructor(
     private readonly scene: Scene,
     private readonly game: Game,
   ) {
     this.night = game.level.id;
+    this.past = !!game.level.past;
     this.buildShell();
     this.buildLights();
     this.buildHallway();
@@ -137,13 +179,20 @@ export class House {
     this.buildKitchen();
     this.buildTv();
     if (this.night === 2) this.buildNightTwo();
-    if (this.night >= 3) this.buildNightThree();
-    this.decor = new Decor(scene, this, game.audio, this.night);
-    this.funeral = new Funeral(scene, this.night);
+    if (this.night >= 3 && !this.past) this.buildNightThree();
+    // Năm 2003: tủ áo chưa dán bùa, lịch bloc năm 2024 chưa có, chưa có đám tang.
+    this.decor = new Decor(scene, this, game.audio, this.past ? 1 : this.night);
+    if (this.past) this.scene.getMeshByName("calendar")?.setEnabled(false);
+    else this.makeCalendarReadable();
+    if (!this.past) this.funeral = new Funeral(scene, this.night);
     if (this.night === 0) new Alley(scene, this, game);
     if (this.night === 2.5) this.fields = new Fields(scene, this, game);
     if (this.night >= 4) this.buildNightFour();
     this.yard = new Yard(scene, this, game);
+    if (this.night !== 2.5) this.phucKy = new PhucKy(scene, this, game);
+    if (this.night !== 2.5) this.coffins = new Coffins(scene, this, game);
+    if (this.past) this.pastScene = new Past(scene, this, game);
+    if (this.night >= 2 && this.night !== 2.5 && !this.past) this.backland = new Backland(scene, this, game);
     this.placeRelics();
     this.buildNav();
     for (const m of this.materials.values()) m.maxSimultaneousLights = 8;
@@ -152,6 +201,46 @@ export class House {
     this.anchors.set("bedroomInside", new Vector3(3.6, 1.4, 4.2));
     this.anchors.set("altar", new Vector3(-6.3, 1.4, 3));
     this.anchors.set("hallEnd", new Vector3(0, 0, -3.6));
+    // Góc tường trên bàn thờ — chỗ con thạch sùng "chặc lưỡi" sau khi đọc lời bà dặn.
+    this.anchors.set("altarWall", new Vector3(-6.8, 2.6, 4.6));
+    this.anchors.set("kitchenTin", TIN_POS.clone());
+    // Ngoài hành lang, nhìn thấy qua khe cửa bếp: chỗ "nó" đứng một thoáng khi bóng đèn bếp giật.
+    this.anchors.set("hallKitchen", new Vector3(-0.1, 0, -2.4));
+  }
+
+  /** Mặt đất tại (x, z) (và tầng, theo độ cao mắt `y`) để chọn tiếng bước chân. */
+  surfaceAt(x: number, z: number, y = 1.6): Surface {
+    if (this.fields) return "dirt";
+    // Trong mơ: chân không chạm đất — chỉ có tiếng giấy sột soạt.
+    if (this.past) return "paper";
+    if (y > FLOOR1_Y + 1) return "wood";
+    if (this.stairAt(x, z)) return "wood";
+    if (this.backland?.inWater(x, z)) return "water";
+    // Tiệm Phúc Ký: nền xi măng cũ.
+    if (x > -7 && x < -1 && z > -6 && z < 0) return "concrete";
+    if (x > -7 && x < 6 && z > -6 && z < 6) return "tile";
+    if (x >= 6) return "mud";
+    return "concrete";
+  }
+
+  private stairAt(x: number, z: number): Stair | undefined {
+    return this.stairs.find((s) => x > s.x0 && x < s.x1 && z > s.z0 - 0.3 && z < s.z1);
+  }
+
+  /**
+   * Đang đứng trên cầu thang thì trả về độ cao mặt bậc dưới chân, không thì null.
+   * `eyeY`: độ cao mắt hiện tại — đứng trên gác ngay phía trên đầu cầu thang thì không bị kéo xuống.
+   */
+  stairHeight(x: number, z: number, eyeY: number): number | null {
+    const s = this.stairAt(x, z);
+    if (!s) return null;
+    const h = s.y0 + (s.y1 - s.y0) * Math.min(1, Math.max(0, (z - s.z0) / (s.z1 - s.z0)));
+    return Math.abs(eyeY - 1.6 - h) < 1.3 ? h : null;
+  }
+
+  /** Lội nước (ruộng ở Chạng vạng, mép ao sau vườn): đi chậm, bước thành tiếng nước. */
+  inWater(x: number, z: number): boolean {
+    return !!this.fields?.inWater(x, z) || !!this.backland?.inWater(x, z);
   }
 
   /** Điểm dẫn đường cho thực thể — xem sơ đồ ở đầu lớp. Tọa độ (x, z). */
@@ -192,6 +281,8 @@ export class House {
       .link("K2", "K4").link("K4", "Y0", "backDoor")
       .link("Y0", "Y1").link("Y0", "Y6").link("Y1", "Y2").link("Y1", "Y6").link("Y1", "Y4")
       .link("Y2", "Y3").link("Y2", "Y4").link("Y2", "Y5").link("Y3", "Y4").link("Y5", "Y6");
+    this.phucKy?.buildNav(this.nav);
+    this.backland?.buildNav(this.nav);
   }
 
   private get director() {
@@ -203,8 +294,9 @@ export class House {
     return this.night === 1 || this.night >= 4;
   }
 
-  /** Đã có nguy hiểm — tủ áo thành chỗ trốn. */
-  private get dangerous(): boolean {
+  /** Đã có nguy hiểm — tủ áo (và tủ hàng tiệm Phúc Ký, bồ lúa nhà kho) thành chỗ trốn. */
+  get dangerous(): boolean {
+    if (this.past) return false;
     return this.night >= 2 || this.director.has("knocking");
   }
 
@@ -221,15 +313,26 @@ export class House {
   private buildShell(): void {
     const floor = this.box("floor", 13.4, 0.2, 12.4, new Vector3(-0.5, -0.1, 0), this.mat("floor", tileUrl(), 11, 10));
     floor.receiveShadows = true;
-    this.box("ceiling", 13.4, 0.2, 12.4, new Vector3(-0.5, WALL_H + 0.1, 0), this.surface("ceiling", 5, 5, new Color3(0.55, 0.5, 0.42)));
+    // Trần nhà cũng là sàn gác kho đồ mã — chừa một lỗ phía trên cầu thang trong tiệm Phúc Ký.
+    // (x0, x1, z0, z1): trần trừ đi ô [STAIR_HOLE] ở góc tây nam.
+    const ceiling = this.surface("ceiling", 5, 5, new Color3(0.55, 0.5, 0.42));
+    const [hx1, hz0, hz1] = [STAIR_HOLE.x1, STAIR_HOLE.z0, STAIR_HOLE.z1];
+    const pieces: [number, number, number, number][] = [
+      [hx1, 6.2, -6.2, 6.2],
+      [-7.2, hx1, -6.2, hz0],
+      [-7.2, hx1, hz1, 6.2],
+    ];
+    for (const [x0, x1, z0, z1] of pieces) {
+      this.box("ceiling", x1 - x0, 0.2, z1 - z0, new Vector3((x0 + x1) / 2, WALL_H + 0.1, (z0 + z1) / 2), ceiling);
+    }
 
     // Tường bao
     this.wall("z", -6, -7, 6, [[-0.6, 0.6]]);
     this.wall("z", 6, -7, 6);
     this.wall("x", -7, -6, 6);
     this.wall("x", 6, -6, 6, [[-5.65, -4.65]]);
-    // Tường hành lang
-    this.wall("x", -1, -6, 6, [[2, 3.2]]);
+    // Tường hành lang — có thêm cửa sang tiệm Phúc Ký (z -3.3..-2.3).
+    this.wall("x", -1, -6, 6, [[-3.3, -2.3], [2, 3.2]]);
     this.wall("x", 1, -6, 6, [[-3, -1.8], [3, 4.2]]);
     // Vách ngăn
     this.wall("z", 0, -7, -1);
@@ -300,6 +403,11 @@ export class House {
   }
 
   setLights(state: LightState): void {
+    if (state === "stutter") {
+      // Không đổi trạng thái đèn của nhà: chỉ bóng bếp (vốn hay chập chờn) giật thêm một chặp.
+      this.stutterTime = 1.2;
+      return;
+    }
     this.lightMode = state;
     const lever = this.scene.getMeshByName("fuseLever");
     if (lever) lever.rotation.x = state === "off" || state === "blackout" ? 0.9 : 0;
@@ -310,8 +418,7 @@ export class House {
       this.hemi.intensity = on ? 0.13 : state === "off" ? 0.035 : 0.005;
       // Đèn tắt thì ánh trăng lọt qua khe cửa chính mới hiện ra — nền sáng để thấy bóng người đứng trước nó.
       this.moonlight.intensity = state === "off" ? 1 : 0;
-      // Sương mỏng đi để thấy được vệt trăng cuối hành lang; lúc có đèn thì sương dày che sự đơn sơ của mô hình.
-      this.scene.fogDensity = state === "off" ? Math.min(0.085, this.baseFog) : this.baseFog;
+      // Sương: xem updateFog (đổi dần theo đèn và theo chỗ người chơi đứng).
     }
     if (state === "blackout") {
       this.altarLight.intensity = 0;
@@ -347,6 +454,11 @@ export class House {
           front.toggle();
           this.game.audio.play("creak", this.anchors.get("frontDoor"));
           this.director.set("entered_house");
+          return;
+        }
+        if (this.past) {
+          this.game.audio.play("rattle", this.anchors.get("frontDoor"));
+          this.game.hud.subtitle("Cửa cài then. Ông dặn đêm Rằm không ai được ra ngoài.", 3);
           return;
         }
         if (!this.doorCanOpen) {
@@ -472,8 +584,30 @@ export class House {
       },
     });
 
+    // Tờ giấy hồng điều ghi ngày giỗ, ghim trên tường cạnh câu đối — manh mối của khóa số hộp bánh quy.
+    const gioMat = new StandardMaterial("gioList", this.scene);
+    gioMat.diffuseTexture = new Texture(gioListUrl(), this.scene, false, true, Texture.NEAREST_SAMPLINGMODE);
+    gioMat.specularColor = Color3.Black();
+    gioMat.emissiveColor = new Color3(0.1, 0.06, 0.05);
+    gioMat.maxSimultaneousLights = 8;
+    const gio = MeshBuilder.CreatePlane("gioList", { width: 0.2, height: 0.3 }, this.scene);
+    gio.position = new Vector3(-6.885, 1.42, 1.2);
+    gio.rotation.y = -Math.PI / 2;
+    gio.rotation.z = 0.04;
+    gio.material = gioMat;
+    // Năm 2003 chưa có tờ ghi giỗ ông, cũng chưa có lời bà dặn.
+    if (this.past) gio.setEnabled(false);
+    makeInteractable(gio, {
+      prompt: () => "Đọc tờ ghi ngày giỗ",
+      interact: () => {
+        this.game.openNote(notes.gioList);
+        this.director.set("read_gio");
+      },
+    });
+
     // Tờ giấy bà để lại.
     const note = this.box("rulesNote", 0.2, 0.006, 0.26, new Vector3(-6.32, 1.113, 2.6), this.mat("paper", undefined, 1, 1, new Color3(0.85, 0.8, 0.68)));
+    if (this.past) note.setEnabled(false);
     (note.material as StandardMaterial).emissiveColor = new Color3(0.08, 0.07, 0.05);
     makeInteractable(note, {
       prompt: () => (this.night >= 4 ? "Đọc trang sổ tay" : this.night === 3 ? "Đọc giấy thầy Sáu" : "Đọc tờ giấy"),
@@ -530,16 +664,17 @@ export class House {
     const nightstand = this.box("nightstand", 0.45, 0.55, 0.45, new Vector3(4.05, 0.275, 5.6), wood);
     if (this.night === 3) {
       makeInteractable(nightstand, {
-        prompt: () => (this.director.has("has_photo") ? null : this.director.has("read_master_note") ? "Mở ngăn kéo" : "Tủ đầu giường"),
+        // Ảnh của Út giờ nằm trong cái rương trên gác kho đồ mã (xem PhucKy) — ngăn kéo này chỉ còn lời nhắn.
+        prompt: () => (this.director.has("read_master_note") && !this.director.has("has_photo") ? "Mở ngăn kéo" : "Tủ đầu giường"),
         interact: () => {
-          if (!this.director.has("read_master_note")) return;
           this.game.audio.play("rattle", nightstand.position);
-          this.collect("photo", "Ảnh thẻ của mình hồi cấp ba. Sau lưng bà ghi: \"Út — đừng để nó lấy.\"");
+          this.game.hud.subtitle("Ngăn kéo trống. Chỉ có mảnh giấy chữ bà: “Album, bà cất trong rương trên gác.”", 4.5);
         },
       });
     }
 
     const diary = this.box("diary", 0.2, 0.04, 0.28, new Vector3(4.75, 0.6, 4.3), this.mat("diaryCover", undefined, 1, 1, new Color3(0.35, 0.08, 0.06)));
+    if (this.past) diary.setEnabled(false);
     makeInteractable(diary, {
       prompt: () => "Đọc sổ tay",
       interact: () => {
@@ -605,28 +740,81 @@ export class House {
     jar.material = this.mat("glaze", undefined, 1, 1, new Color3(0.3, 0.2, 0.12));
     jar.checkCollisions = true;
 
-    const box = this.box("tinBox", 0.22, 0.1, 0.16, new Vector3(5.45, 0.95, -2.2), tin);
-    const key = this.box("key", 0.08, 0.01, 0.025, new Vector3(5.45, 1.006, -2.2), this.mat("gold", undefined, 1, 1, new Color3(0.55, 0.42, 0.18)));
-    key.isPickable = false;
-    if (this.night >= 2) key.setEnabled(false);
+    // Hộp bánh quy bơ xanh — như mọi nhà Việt, bên trong không có bánh mà là kim chỉ.
+    // Đêm 1 bà quấn sợi dây khóa xe đạp số quanh hộp; mã là ngày giỗ ông.
+    const tinBlue = this.mat("cookieTin", undefined, 1, 1, new Color3(0.13, 0.22, 0.52));
+    tinBlue.specularColor = new Color3(0.25, 0.25, 0.3);
+    const box = MeshBuilder.CreateCylinder("tinBox", { diameter: 0.26, height: 0.08, tessellation: 18 }, this.scene);
+    box.position = TIN_POS.clone();
+    box.material = tinBlue;
+    // Nắp xanh lam, viền vàng — nhận ra ngay dù bếp tối.
+    const lid = MeshBuilder.CreateCylinder("tinLid", { diameter: 0.27, height: 0.025, tessellation: 18 }, this.scene);
+    lid.position = TIN_POS.add(new Vector3(0, 0.05, 0));
+    const lidMat = this.mat("cookieTinLid", undefined, 1, 1, new Color3(0.16, 0.3, 0.72));
+    lidMat.emissiveColor = new Color3(0.02, 0.04, 0.1);
+    lid.material = lidMat;
+    lid.isPickable = false;
+    const rim = MeshBuilder.CreateTorus("tinRim", { diameter: 0.265, thickness: 0.012, tessellation: 20 }, this.scene);
+    rim.parent = lid;
+    rim.position.y = 0.012;
+    rim.material = this.mat("cookieTinRim", undefined, 1, 1, new Color3(0.62, 0.5, 0.22));
+    rim.isPickable = false;
+    const cable = MeshBuilder.CreateTorus("tinLock", { diameter: 0.27, thickness: 0.018, tessellation: 20 }, this.scene);
+    cable.position = TIN_POS.add(new Vector3(0, 0.02, 0));
+    cable.material = this.mat("cableLock", undefined, 1, 1, new Color3(0.5, 0.06, 0.04));
+    cable.isPickable = false;
+    // Cục khóa số nằm phía người chơi đứng (−x, quay lưng vào bếp).
+    const dials = MeshBuilder.CreateBox("tinLockDials", { width: 0.035, height: 0.03, depth: 0.075 }, this.scene);
+    dials.material = tin;
+    dials.parent = cable;
+    dials.position.set(-0.142, 0, 0);
+    dials.isPickable = false;
+    if (this.night !== 1) cable.setEnabled(false);
     makeInteractable(box, {
       prompt: () => {
         if (this.night >= 4) return null;
         if (this.night === 3) return this.director.has("read_master_note") && !this.director.has("has_matches") ? "Lấy hộp diêm" : null;
-        return this.director.has("has_key") ? null : "Mở hộp thiếc";
+        if (this.night !== 1 || this.director.has("has_key")) return null;
+        return this.director.has("read_rules") ? "Mở khóa số" : "Hộp bánh quy";
       },
       interact: () => {
         if (this.night === 3) {
           this.game.audio.play("rattle", box.position);
-          this.collect("matches", "Hộp diêm Thống Nhất. Còn đúng ba que.");
+          this.collect("matches", "Hộp diêm Thống Nhất, nằm giữa kim chỉ. Còn đúng ba que.");
           return;
         }
-        key.setEnabled(false);
-        this.game.audio.play("click");
-        this.game.hud.subtitle("Chìa khóa phòng bà. Bà vẫn để chỗ cũ.", 3.5);
-        this.director.set("has_key");
+        if (!this.director.has("tin_seen")) {
+          this.director.set("tin_seen");
+          this.game.hud.subtitle("Hộp bánh quy bơ. Ở nhà bà, hộp này chưa bao giờ đựng bánh.\nVậy mà có người quấn cả sợi dây khóa xe đạp quanh nó.", 5);
+          if (!this.director.has("read_rules")) return;
+        }
+        this.game.openLock({
+          title: "Dây khóa xe đạp",
+          sub: this.director.has("read_rules")
+            ? "Sợi dây khóa số hồi nhỏ của mình. Bà dặn: mã là ngày giỗ ông, ngày trước tháng sau."
+            : "Sợi dây khóa số hồi nhỏ của mình. Mã số gì đây?",
+          digits: 4,
+          onTry: (code) => this.tryTinCode(code),
+          onTurn: () => this.game.audio.play("tick", TIN_POS),
+          onSolved: () => {
+            cable.setEnabled(false);
+            lid.position.addInPlace(new Vector3(-0.2, -0.04, 0.12));
+            lid.rotation.z = 0.25;
+            this.game.audio.play("unlock", TIN_POS);
+            this.game.hud.subtitle("Bên trong: kim, chỉ, mấy cái nút áo… và chìa khóa phòng bà.\nKẹp dưới nắp có mảnh giấy: “Không có bánh đâu. — Bà”", 6);
+            this.director.set("has_key");
+          },
+        });
       },
     });
+
+    // Khung cửa bếp nhìn ra hành lang: mục tiêu vô hình cho điều kiện "visible" (người chơi đang nhìn ra cửa bếp).
+    const doorway = MeshBuilder.CreatePlane("kitchenDoorway", { width: 1.1, height: 2.1 }, this.scene);
+    doorway.position = new Vector3(1, 1.05, -2.4);
+    doorway.rotation.y = Math.PI / 2;
+    doorway.isVisible = false;
+    doorway.isPickable = false;
+    this.targets.set("kitchenDoorway", doorway);
 
     // Cửa sau: bản lề x=6, z=-5.65, mở ra vườn (+x).
     const backDoor = this.door("backDoor", new Vector3(6, 0, -5.65), new Vector3(0, DOOR_H / 2, 0.5), [0.08, DOOR_H, 1.0], Math.PI * 0.45);
@@ -752,7 +940,8 @@ export class House {
         lid.position.x -= 0.25;
         lid.rotation.z = 0.3;
         this.game.audio.play("rattle", riceJar.position);
-        this.collect("rice", "Một mảnh chén men lam, vùi sâu giữa gạo. Cạnh sắc vẫn còn vết máu khô.");
+        // Vết máu khô là của đứa nhỏ làm bể chén năm 2003; người đang cầm nó thì không chảy máu (manh mối kết thật).
+        this.collect("rice", "Một mảnh chén men lam vùi giữa gạo. Cạnh sắc còn vết máu khô từ hồi nào.\nNó cứa ngang ngón tay mình… mà không thấy chảy máu. May.");
       },
     });
 
@@ -768,10 +957,13 @@ export class House {
   /** Chỗ giấu di vật của từng màn (x, y, z, xoay) — khuất nhưng không đi ngang được là thấy ngay. */
   private static readonly RELIC_SPOTS: Record<string, [number, number, number, number]> = {
     receipt: [-1.15, 0.012, -29.8, 0.4],
-    taboos: [-4.4, 0.462, 5.25, 0.2],
-    horoscope: [10.95, 0.012, -4.55, 1.1],
+    // Trên bàn điểm nhãn trong tiệm Phúc Ký — nơi "ba điều cấm" được chép lại đời này qua đời khác.
+    taboos: [-2.5, 0.858, -0.78, 0.2],
+    // Kẽ bia mộ ông, khu mộ sau vườn.
+    horoscope: [35.3, 0.012, 4.2, 1.1],
     graveLetter: [11, 0.462, 126, 0.3],
-    eyeBrush: [-0.55, 0.012, -3.2, 0.7],
+    // Trên bàn điểm nhãn, cạnh ống bút của ông.
+    eyeBrush: [-4.2, 0.858, -0.8, 0.7],
     confession: [-5.7, 0.012, 2.2, -0.3],
   };
 
@@ -803,6 +995,34 @@ export class House {
         },
       });
     }
+  }
+
+  /** Lịch bloc (do Decor dựng) thành vật đọc được. */
+  private makeCalendarReadable(): void {
+    const cal = this.scene.getMeshByName("calendar");
+    if (!cal) return;
+    cal.isPickable = true;
+    makeInteractable(cal, {
+      prompt: () => "Xem lịch",
+      interact: () => {
+        this.game.openNote(notes.calendar);
+        this.director.set("read_calendar");
+      },
+    });
+  }
+
+  /** Thử mã khóa hộp bánh quy. Trả về câu phản hồi khi sai, null khi đúng. Gợi ý rõ dần theo số lần sai. */
+  private tryTinCode(code: string): string | null {
+    this.game.playtest.log("action", `tin-code:${code}`);
+    if (code === TIN_CODE) return null;
+    this.tinTries++;
+    this.game.audio.play("rattle", TIN_POS);
+    if (code === "1507") return "Không mở.\nBà gạch chữ Rằm đi rồi mà… Giỗ ông không phải đêm Rằm.";
+    if (code === "0716") return "Không mở.\nNgày trước, tháng sau — bà dặn vậy.";
+    if (OTHER_GIO.includes(code)) return "Không mở.\nĐó là giỗ người khác trong nhà, không phải giỗ ông.";
+    if (this.tinTries >= 5) return "Không mở.\nGiỗ ông là sáng hôm sau đêm Rằm tháng Bảy. Lịch dưới bếp ghi Rằm là ngày mấy?";
+    if (this.tinTries >= 3) return "Không mở.\nNgày giỗ ông… cạnh bàn thờ hình như có tờ giấy ghi.";
+    return "Không mở.";
   }
 
   collect(id: string, line: string): void {
@@ -910,11 +1130,40 @@ export class House {
     this.altarLight.intensity = 0.8;
   }
 
+  /**
+   * Sương đổi dần chứ không nhảy: trong nhà dày (che sự đơn sơ của mô hình, mất điện thì mỏng đi để thấy vệt trăng),
+   * ngoài đất sau vườn thì loãng để nhìn được ra xa — chỗ rộng mà không thấy gì thì chỉ thấy chật.
+   */
+  private updateFog(dt: number): void {
+    const p = this.game.player.camera.position;
+    let target = this.lightMode === "off" ? Math.min(0.085, this.baseFog) : this.baseFog;
+    if (this.backland && p.x > 13) target = 0.06;
+    else if (p.y > FLOOR1_Y + 1) target = 0.1;
+    const k = Math.min(1, dt * 1.2);
+    this.scene.fogDensity += (target - this.scene.fogDensity) * k;
+    // Ngoài trời: trời đêm ngả xanh chàm — tre, cây gạo, mái nhà hiện thành bóng đen trên nền trời, thấy được chỗ
+    // rộng. Trong nhà: đen gần tuyệt đối như cũ.
+    if (this.night !== 0 && !this.fields) {
+      const outdoor = p.x > 6.05;
+      const sky = outdoor ? SKY_NIGHT : SKY_INDOOR;
+      const fog = this.scene.fogColor;
+      fog.r += (sky.r - fog.r) * k;
+      fog.g += (sky.g - fog.g) * k;
+      fog.b += (sky.b - fog.b) * k;
+      this.scene.clearColor.set(fog.r, fog.g, fog.b, 1);
+    }
+  }
+
   update(dt: number): void {
     this.time += dt;
+    this.updateFog(dt);
+    this.phucKy?.update(dt);
+    this.backland?.update(dt);
     for (const d of this.doors.values()) d.update(dt);
-    this.decor.update(dt, this.lightsOn);
-    this.funeral.update(dt);
+    this.decor.update(dt, this.lightsOn, this.clockStopped);
+    this.funeral?.update(dt);
+    this.coffins?.update(dt);
+    this.pastScene?.update(dt);
     this.fields?.update(dt);
     this.yard.update(dt);
     if (this.powerTime > 0) {
@@ -938,24 +1187,41 @@ export class House {
       }
     }
 
+    // Giảm chớp & rung: đèn vẫn chập chờn (là tín hiệu của lối chơi) nhưng chậm hơn và không tắt hẳn.
+    const dim = comfort.calm ? 0.45 : 0.05;
+    const tick = () => (comfort.calm ? 0.18 + Math.random() * 0.15 : 0.04 + Math.random() * 0.08);
     if (this.lightMode === "flicker") {
       this.flickerTime -= dt;
       this.flickerTick -= dt;
       if (this.flickerTick <= 0) {
-        this.flickerTick = 0.04 + Math.random() * 0.08;
-        for (const b of this.bulbs) this.setBulb(b, Math.random() < 0.45 ? 1 : 0.05);
+        this.flickerTick = tick();
+        for (const b of this.bulbs) this.setBulb(b, Math.random() < 0.45 ? 1 : dim);
       }
       if (this.flickerTime <= 0) this.setLights("on");
     } else if (this.lightMode === "on") {
-      // Bóng đèn bếp chập chờn sẵn — dấu hiệu nhỏ rằng căn nhà "không ổn".
-      for (const b of this.bulbs) {
-        if (b.flickery) this.setBulb(b, Math.random() < 0.015 ? 0.1 : 1);
+      if (this.stutterTime > 0) {
+        this.stutterTime -= dt;
+        this.flickerTick -= dt;
+        if (this.flickerTick <= 0) {
+          this.flickerTick = tick();
+          for (const b of this.bulbs) if (b.flickery) this.setBulb(b, this.stutterTime <= 0 || Math.random() < 0.4 ? 1 : dim);
+        }
+      } else {
+        // Bóng đèn bếp chập chờn sẵn — dấu hiệu nhỏ rằng căn nhà "không ổn".
+        for (const b of this.bulbs) {
+          if (b.flickery) this.setBulb(b, Math.random() < 0.015 ? (comfort.calm ? 0.6 : 0.1) : 1);
+        }
       }
     }
 
     if (this.director.has("lit_incense")) {
       this.altarLight.intensity = 0.75 + Math.sin(this.time * 7) * 0.05 + Math.random() * 0.04;
     }
+  }
+
+  /** Beat kịch bản: để khu vực nào biết thì khu đó diễn. */
+  beat(name: string): boolean {
+    return !!this.phucKy?.beat(name) || !!this.backland?.beat(name) || !!this.coffins?.beat(name) || !!this.pastScene?.beat(name);
   }
 
   isDoorOpen(name: string): boolean {
@@ -1029,7 +1295,7 @@ export class House {
     return m;
   }
 
-  private door(name: string, hinge: Vector3, leafOffset: Vector3, size: [number, number, number], openAngle: number): Door {
+  door(name: string, hinge: Vector3, leafOffset: Vector3, size: [number, number, number], openAngle: number): Door {
     const pivot = new TransformNode(`${name}-pivot`, this.scene);
     pivot.position = hinge;
     const leaf = MeshBuilder.CreateBox(name, { width: size[0], height: size[1], depth: size[2] }, this.scene);

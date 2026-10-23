@@ -24,6 +24,10 @@ export interface SettingsValues {
   quality: number;
   /** Nhiễu hạt + quang sai màu: 1 bật, 0 tắt. */
   film: number;
+  /** Giảm chớp sáng & rung: 1 bật (đèn chập chờn dịu đi, không rung camera, không chớp giao diện). */
+  calm: number;
+  /** Thời gian hiện chữ (phụ đề, lời kể): 0 vừa, 1 lâu, 2 rất lâu. */
+  textTime: number;
 }
 
 type RangeSpec = { kind: "range"; min: number; max: number; step: number; label: string; format: (v: number) => string };
@@ -31,7 +35,18 @@ type ChoiceSpec = { kind: "choice"; options: string[]; label: string };
 export type SettingSpec = RangeSpec | ChoiceSpec;
 
 const KEY = "vongam.settings";
-const DEFAULTS: SettingsValues = { sensitivity: 1, brightness: 1, volume: 0.9, music: 1, sfx: 1, difficulty: 1, paperFont: 0, subtitles: 1, quality: 1, film: 1 };
+const prefersCalm = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const DEFAULTS: SettingsValues = {
+  sensitivity: 1, brightness: 1, volume: 0.9, music: 1, sfx: 1, difficulty: 1, paperFont: 0, subtitles: 1, quality: 1, film: 1,
+  calm: prefersCalm ? 1 : 0, textTime: 0,
+};
+const TEXT_TIME = [1, 1.5, 2];
+
+/**
+ * Tùy chọn dễ chịu mà nhiều hệ thống cần đọc (đèn, giao diện, thực thể) — để không phải truyền Settings đi khắp nơi.
+ * `calm`: giảm chớp & rung. `textTime`: hệ số nhân thời gian hiện chữ.
+ */
+export const comfort = { calm: DEFAULTS.calm === 1, textTime: 1 };
 const percent = (v: number) => `${Math.round(v * 100)}%`;
 
 const times = (v: number) => `${v.toFixed(2)}×`;
@@ -47,6 +62,8 @@ export const SETTING_SPECS: Record<keyof SettingsValues, SettingSpec> = {
   paperFont: { kind: "choice", options: ["Viết tay", "Chữ in"], label: "Chữ trên giấy" },
   quality: { kind: "choice", options: ["Thấp", "Vừa", "Cao"], label: "Chất lượng hình" },
   film: { kind: "choice", options: ["Tắt", "Bật"], label: "Nhiễu hạt phim" },
+  calm: { kind: "choice", options: ["Tắt", "Bật"], label: "Giảm chớp & rung" },
+  textTime: { kind: "choice", options: ["Vừa", "Lâu", "Rất lâu"], label: "Thời gian hiện chữ" },
 };
 
 export class Settings {
@@ -62,6 +79,13 @@ export class Settings {
     } catch {
       // Không đọc được bộ nhớ trình duyệt: dùng mặc định.
     }
+    this.syncComfort();
+  }
+
+  private syncComfort(): void {
+    comfort.calm = this.values.calm === 1;
+    comfort.textTime = TEXT_TIME[this.values.textTime] ?? 1;
+    document.body.classList.toggle("calm", comfort.calm);
   }
 
   onChange(cb: (v: SettingsValues) => void): void {
@@ -76,6 +100,7 @@ export class Settings {
     } catch {
       // Không lưu được: cài đặt vẫn áp dụng cho lần chơi này.
     }
+    this.syncComfort();
     for (const cb of this.listeners) cb(this.values);
   }
 }

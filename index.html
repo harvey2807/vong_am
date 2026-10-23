@@ -24,8 +24,10 @@
     <div id="hide-overlay" class="hidden" aria-hidden="true"></div>
     <div id="crosshair" aria-hidden="true"></div>
     <div id="prompt" class="hidden" role="status"><kbd class="key">E</kbd><span class="label"></span></div>
-    <div id="objective" class="hidden" role="status"><span class="obj-label">Việc cần làm</span><span class="obj-text"></span></div>
+    <div id="objective" class="hidden" role="status"><span class="obj-label">Việc cần làm</span><span class="obj-text"></span><span class="obj-journal"><kbd data-key="journal">J</kbd> sổ tay</span></div>
     <div id="subtitle" role="status" aria-live="polite"></div>
+    <!-- Thông báo tin nhắn kiểu điện thoại: ai gửi, câu đầu, mờ dần. -->
+    <div id="toast" class="hidden" role="status" aria-live="polite"><span class="toast-app">Zalo · bây giờ</span><b class="toast-from"></b><span class="toast-text"></span></div>
     <pre id="errors" class="hidden"></pre>
 
     <!-- ============================================================ giấy / ảnh -->
@@ -50,7 +52,45 @@
         </div>
         <p class="paper-page" id="reader-page"></p>
       </article>
-      <p class="reader-hint"><span id="reader-pager"><kbd>A</kbd> <kbd>D</kbd> lật trang · </span><kbd class="key">E</kbd> đặt xuống</p>
+      <p class="reader-hint"><span id="reader-pager"><kbd data-key="left">A</kbd> <kbd data-key="right">D</kbd> lật trang · </span><kbd data-key="interact">E</kbd> đặt xuống</p>
+    </div>
+
+    <!-- ============================================================ khóa số -->
+    <div id="lock" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="lock-title">
+      <section class="lock">
+        <h2 id="lock-title"></h2>
+        <p class="lock-sub" id="lock-sub"></p>
+        <div class="dials" id="lock-dials" role="group" aria-label="Các vòng số"></div>
+        <p class="lock-msg" id="lock-msg" aria-live="polite"></p>
+      </section>
+      <p class="reader-hint"><kbd data-key="left">A</kbd> <kbd data-key="right">D</kbd> chọn vòng · <kbd data-key="forward">W</kbd> <kbd data-key="back">S</kbd> xoay · <kbd data-key="interact">E</kbd> kéo thử · <kbd>Q</kbd> thôi</p>
+    </div>
+
+    <!-- ============================================================ sổ tay -->
+    <div id="journal" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Sổ tay">
+      <section class="journal">
+        <nav class="j-tabs" id="journal-tabs" role="tablist">
+          <button role="tab" data-tab="0">Việc cần làm</button>
+          <button role="tab" data-tab="1">Giấy tờ</button>
+          <button role="tab" data-tab="2">Tin nhắn</button>
+        </nav>
+        <div class="j-body" id="journal-body"></div>
+      </section>
+      <p class="reader-hint"><kbd data-key="left">A</kbd> <kbd data-key="right">D</kbd> đổi trang · <kbd data-key="forward">W</kbd> <kbd data-key="back">S</kbd> chọn · <kbd data-key="interact">E</kbd> đọc lại · <kbd>H</kbd> gợi ý · <kbd data-key="journal">J</kbd> đóng</p>
+    </div>
+
+    <!-- ============================================================ cảnh báo nội dung -->
+    <div id="warning" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="warning-title">
+      <section class="panel warning-panel">
+        <h2 id="warning-title" class="panel-title">Trước khi bước vào</h2>
+        <p>VONG ÂM là trò chơi kinh dị tâm lý. Trong game có cái chết của người thân, tang lễ, hình ảnh rùng rợn, âm thanh đột ngột, đèn chớp tắt và một vài cú hù.</p>
+        <p>Có thể <b>giảm chớp &amp; rung</b>, đổi <b>phím</b>, kéo dài <b>thời gian hiện chữ</b> trong Cài đặt. Phím <kbd>M</kbd> tắt tiếng ngay lập tức.</p>
+        <p class="warning-note">Nên đeo tai nghe. Các tục lệ trong game có thật trong đời sống người Việt; câu chuyện và các thực thể là hư cấu.</p>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" id="warning-settings">Cài đặt</button>
+          <button class="btn btn-primary" id="warning-ok">Tôi hiểu</button>
+        </div>
+      </section>
     </div>
 
     <!-- ============================================================ màn hình chính -->
@@ -66,7 +106,7 @@
           <span class="loading">Đang thắp nhang…</span>
         </nav>
       </div>
-      <p class="menu-foot"><span id="sound-hint" class="sound-hint">Bấm phím hoặc chuột bất kỳ để nghe tiếng mưa ·</span> Nên đeo tai nghe · <kbd>WASD</kbd> đi · <kbd>Shift</kbd> chạy · <kbd>E</kbd> tương tác · <kbd>F</kbd> đèn pin · <kbd>Esc</kbd> tạm dừng</p>
+      <p class="menu-foot"><span id="sound-hint" class="sound-hint">Bấm phím hoặc chuột bất kỳ để nghe tiếng mưa ·</span> Nên đeo tai nghe · <kbd data-key="forward">W</kbd><kbd data-key="left">A</kbd><kbd data-key="back">S</kbd><kbd data-key="right">D</kbd> đi · <kbd data-key="sprint">Shift</kbd> chạy · <kbd data-key="interact">E</kbd> tương tác · <kbd data-key="flashlight">F</kbd> đèn pin · <kbd data-key="journal">J</kbd> sổ tay · <kbd>M</kbd> tắt tiếng · <kbd>Esc</kbd> tạm dừng</p>
     </div>
 
     <!-- ============================================================ chuyển chương -->
@@ -94,6 +134,9 @@
       <section class="panel">
         <h2 id="settings-title" class="panel-title">Cài đặt</h2>
         <div class="settings" id="settings-list"></div>
+        <h3 class="panel-section">Phím điều khiển</h3>
+        <p class="panel-sub">Bấm vào một phím rồi nhấn phím mới. <kbd>Esc</kbd> để hủy.</p>
+        <div class="keybinds" id="keybind-list"></div>
         <div class="panel-actions">
           <button class="btn btn-ghost" id="fullscreen-btn">Toàn màn hình</button>
           <button class="btn btn-primary" data-close>Xong</button>

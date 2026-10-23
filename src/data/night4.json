@@ -9,7 +9,7 @@
       },
       {
         "type": "subtitle",
-        "text": "Đêm thứ tư. Đêm cuối.",
+        "text": "Ba mươi tháng Bảy. Đêm cuối cùng cửa ngục còn mở.",
         "duration": 3
       },
       {
@@ -32,7 +32,10 @@
       },
       {
         "type": "objective",
-        "text": "Đọc trang giấy trên bàn thờ"
+        "text": "Đọc trang giấy trên bàn thờ",
+        "hints": [
+          "Trang giấy kẹp dưới lư hương, ngay trên bàn thờ."
+        ]
       }
     ]
   },
@@ -47,7 +50,12 @@
     "actions": [
       {
         "type": "objective",
-        "text": "Tìm cây kéo trong hộp may của bà (phòng bà)"
+        "text": "Tìm cây kéo trong hộp may của bà (phòng bà)",
+        "hints": [
+          "Hộp may bằng thiếc xanh nằm trên giường bà.",
+          "Đèn tắt thì hình nhân đi được. Rọi đèn pin ({flashlight}) thẳng vào chúng thì chúng đứng im.",
+          "Tiếng bước chân giống mình là “nó”. Nghe gần thì trốn vào tủ áo, giữ {breath} để nín thở."
+        ]
       },
       {
         "type": "wait",
@@ -163,6 +171,67 @@
     ]
   },
   {
+    "id": "self_text",
+    "comment": "Điện thoại lại bị chiếm: tin tới từ liên lạc tên Út — số của chính mình.",
+    "when": {
+      "all": [
+        "knocking"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ],
+      "delay": 28
+    },
+    "actions": [
+      {
+        "type": "message",
+        "from": "Út",
+        "text": "mở cửa đi",
+        "eerie": true
+      },
+      {
+        "type": "wait",
+        "seconds": 2.2
+      },
+      {
+        "type": "message",
+        "from": "Út",
+        "text": "tao biết mày đang trốn ở đâu",
+        "eerie": true
+      },
+      {
+        "type": "wait",
+        "seconds": 2.4
+      },
+      {
+        "type": "message",
+        "from": "Út",
+        "text": "đêm đó mày cũng trốn y vậy",
+        "eerie": true
+      },
+      {
+        "type": "wait",
+        "seconds": 2.4
+      },
+      {
+        "type": "message",
+        "from": "Út",
+        "text": "mày cài then. bà chết ngoài giếng",
+        "eerie": true
+      },
+      {
+        "type": "wait",
+        "seconds": 2.4
+      },
+      {
+        "type": "subtitle",
+        "text": "…Tin nhắn gửi từ số của mình.",
+        "duration": 4
+      }
+    ]
+  },
+  {
     "id": "lure_grandma",
     "comment": "Quy tắc 1 lần cuối: giọng bà, giọng mẹ — và lời buộc tội rằng thứ trong nhà mới là đồ giả.",
     "when": {
@@ -264,7 +333,12 @@
     "actions": [
       {
         "type": "objective",
-        "text": "Bật cầu dao ở tường bếp, rồi gỡ ảnh thờ khi đèn còn sáng"
+        "text": "Bật cầu dao ở tường bếp, rồi gỡ ảnh thờ khi đèn còn sáng",
+        "hints": [
+          "Cầu dao gắn trên tường bếp, cạnh lối ra hành lang.",
+          "Bật cầu dao thì đèn sáng khoảng 25 giây — nhưng “nó” nghe tiếng và đi về phía bếp. Chạy thẳng ra bàn thờ.",
+          "Phải gỡ ảnh khi đèn còn sáng. Đèn tắt mà nhìn ảnh là phạm điều dặn thứ 3."
+        ]
       }
     ]
   },
@@ -287,7 +361,11 @@
       },
       {
         "type": "objective",
-        "text": "Gỡ ảnh thờ xuống khi đèn còn sáng"
+        "text": "Gỡ ảnh thờ xuống khi đèn còn sáng",
+        "hints": [
+          "Ảnh thờ ở giữa bàn thờ phòng khách. Đèn còn sáng thì cứ nhìn, cứ gỡ.",
+          "Đèn tắt rồi thì quay lại bếp bật cầu dao lần nữa."
+        ]
       }
     ]
   },
@@ -361,6 +439,143 @@
     ]
   },
   {
+    "id": "tomb_opened",
+    "comment": "Thọ mộc của bà: mình đã nằm trong này sáng hôm bà mất (LORE_DEEPDIVE §4.5, §6.3).",
+    "when": {
+      "all": [
+        "opened_tho_moc"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 1.4
+      },
+      {
+        "type": "subtitle",
+        "text": "Lớp lụa đỏ lót hòm còn lõm hình một người nằm. Vừa cỡ mình.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "subtitle",
+        "text": "Mặt trong nắp có vết móng tay cào. Năm vạch đếm.",
+        "duration": 4
+      },
+      {
+        "type": "wait",
+        "seconds": 4.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Một cái vé xe khách. Một cục sạc điện thoại — cục sạc mình làm mất tuần trước.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "subtitle",
+        "text": "…Mình đã nằm ở đây.",
+        "duration": 3.5,
+        "glitch": "…Đêm bà mất, mình đã nằm ở đây."
+      },
+      {
+        "type": "wait",
+        "seconds": 4
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Mày cài then cho bà chết.”",
+        "duration": 4,
+        "voice": true
+      }
+    ]
+  },
+  {
+    "id": "child_coffin_found",
+    "when": {
+      "all": [
+        "found_child_coffin"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 0.8
+      },
+      {
+        "type": "subtitle",
+        "text": "Dưới đống vàng mã là một cỗ hòm nhỏ. Dài vừa một đứa con nít nằm.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "subtitle",
+        "text": "Bảy cây đinh trấn. Lá bùa bong một nửa.\nHai mươi năm nay, mỗi đêm mình thắp nhang ngay phía trên nó.",
+        "duration": 5
+      }
+    ]
+  },
+  {
+    "id": "child_coffin_opened",
+    "when": {
+      "all": [
+        "opened_child_coffin"
+      ],
+      "none": [
+        "ending",
+        "caught"
+      ]
+    },
+    "actions": [
+      {
+        "type": "wait",
+        "seconds": 0.5
+      },
+      {
+        "type": "subtitle",
+        "text": "Một bọc áo bà ba hoa của bà, quấn quanh một thứ rất nhỏ. Và một xấp thư buộc dây.",
+        "duration": 5
+      },
+      {
+        "type": "wait",
+        "seconds": 5.5
+      },
+      {
+        "type": "sound",
+        "sound": "whisper",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "“Bà ơi… con lạnh.”",
+        "duration": 3.5,
+        "voice": true
+      }
+    ]
+  },
+  {
     "id": "photo_taken",
     "when": {
       "all": [
@@ -380,11 +595,46 @@
       {
         "type": "objective",
         "text": "Cắt người thứ năm ra khỏi ảnh, đốt trong thau vàng mã cạnh bàn thờ",
-        "glitch": "Nhìn vào ảnh đi Út"
+        "glitch": "Nhìn vào ảnh đi Út",
+        "hints": [
+          "Thau đốt vàng mã đặt dưới sàn gần bàn thờ, chỗ tro còn ấm."
+        ]
       },
       {
         "type": "tension",
         "add": 0.2
+      }
+    ]
+  },
+  {
+    "id": "two_choices",
+    "comment": "Đã mở cỗ hòm nhỏ và đang cầm ảnh: hai đứa trong ảnh đều là mình — chọn cắt ai (kết Trả hồn).",
+    "when": {
+      "all": [
+        "has_family_photo",
+        "opened_child_coffin"
+      ],
+      "none": [
+        "ending",
+        "caught",
+        "fifth_burned",
+        "self_returned"
+      ]
+    },
+    "actions": [
+      {
+        "type": "objective",
+        "text": "Cắt một người ra khỏi ảnh",
+        "hints": [
+          "Người thứ năm: đốt trong thau vàng mã cạnh bàn thờ.",
+          "Đứa sáu tuổi đứng cạnh bà — chỗ của mình trong ảnh: đặt vào cỗ hòm nhỏ.",
+          "Không có lựa chọn nào đúng. Bà thương cả hai."
+        ]
+      },
+      {
+        "type": "subtitle",
+        "text": "Trong ảnh có hai đứa là mình. Đứa sáu tuổi đứng cạnh bà. Đứa người lớn đứng phía sau.",
+        "duration": 5
       }
     ]
   },
@@ -449,7 +699,8 @@
       "none": [
         "caught",
         "opened_front_door",
-        "all_relics"
+        "all_relics",
+        "self_returned"
       ]
     },
     "actions": [
@@ -507,7 +758,7 @@
       {
         "type": "ending",
         "title": "Hết",
-        "text": "Gần sáng, chú Tư về, ngồi xuống bậc cửa khóc như con nít. Chú không nhớ gì về ba đêm qua.\nTấm ảnh thờ giờ chỉ còn bốn người. Ở chỗ bị cắt, có một vết cháy nhỏ hình bàn tay.\n\nTối đó, lần đầu tiên sau bốn đêm, không ai gõ cửa.",
+        "text": "Gần sáng, người ta tìm thấy chú Tư trong bụi tre đầu làng, miệng đầy giấy tiền vàng mã. Chú không nhớ gì về ba đêm qua.\nTấm ảnh thờ giờ chỉ còn bốn người. Ở chỗ bị cắt, có một vết cháy nhỏ hình bàn tay.\nTrưa, mẹ về tới. Mẹ ôm tôi rất lâu, rồi hỏi sao tay con lạnh vậy.\n\nTối đó, lần đầu tiên sau bốn đêm, không ai gõ cửa.",
         "final": true
       }
     ]
@@ -521,7 +772,8 @@
       ],
       "none": [
         "caught",
-        "opened_front_door"
+        "opened_front_door",
+        "self_returned"
       ]
     },
     "actions": [
@@ -601,7 +853,7 @@
       {
         "type": "ending",
         "title": "Thế thân",
-        "text": "Không có máu. Bên dưới lớp da mỏng như giấy bản là một nan tre nhỏ, chuốt rất kỹ — đúng tay nghề nhà họ Lâm.\nHai mươi năm trước, bà ẵm nhầm đứa không khóc. Đứa khóc bị nhốt trong tủ áo, chờ tới ngày được ra gõ cửa nhà mình.\n\nNgười tôi vừa đốt trong ảnh mới là Út.\n\nGần sáng, chú Tư về, ôm tôi khóc. Chú gọi tôi là Út. Bà nói đúng: bà thương hết.",
+        "text": "Không có máu. Bên dưới lớp da mỏng như giấy bản là một nan tre nhỏ, chuốt rất kỹ — đúng tay nghề nhà họ Lâm.\nHai mươi năm trước, bà ẵm đứa biết khóc, vì tin rằng giấy thì không biết khóc. Đứa còn lại nín thinh, như mỗi lần sợ, như buổi chiều làm bể cái chén men lam. Ba ngày sau bà mở tủ áo, thấy trên ngón tay nó vết đứt của mảnh chén. Từ đó bà biết. Bà vẫn nuôi tôi.\n\nNgười tôi vừa đốt trong ảnh mới là Út.\n\nĐiện thoại rung. Tin của mẹ, gửi từ sân bay: “Mẹ biết từ năm con sáu tuổi. Ôm con mà người con nhẹ quá. Mẹ xin lỗi, mẹ đã đi.”\n\nGần sáng, chú Tư về, ôm tôi khóc. Chú gọi tôi là Út. Bà nói đúng: bà thương hết.",
         "final": true
       }
     ],
@@ -616,7 +868,8 @@
       ],
       "none": [
         "caught",
-        "fifth_burned"
+        "fifth_burned",
+        "self_returned"
       ]
     },
     "actions": [
@@ -658,7 +911,111 @@
       {
         "type": "ending",
         "title": "Bạn đã mở cửa cho chính mình.",
-        "text": "Người đứng ngoài hiên có gương mặt của bạn. Nó mỉm cười, bước vào, quỳ xuống thắp cho bà một nén nhang.\nCòn bạn đứng ngoài mưa. Bạn gõ cửa ba lần.\nKhông ai mở."
+        "text": "Người đứng ngoài hiên có gương mặt của bạn. Sau lưng nó là bà, tóc còn ướt.\nNó bước vào, quỳ xuống thắp cho bà một nén nhang. Bà đi theo nó vào nhà, không quay lại nhìn bạn.\nCòn bạn đứng ngoài mưa. Bạn gõ cửa ba lần.\nKhông ai mở."
+      }
+    ]
+  },
+  {
+    "id": "ending_return",
+    "comment": "Kết Trả hồn: cắt đứa sáu tuổi (chỗ của mình trong ảnh), đặt vào cỗ hòm nhỏ. Hình nhân tự cháy, trả hồn về.",
+    "when": {
+      "all": [
+        "self_returned"
+      ],
+      "none": [
+        "caught",
+        "opened_front_door",
+        "fifth_burned"
+      ]
+    },
+    "actions": [
+      {
+        "type": "setFlag",
+        "flag": "ending"
+      },
+      {
+        "type": "objective",
+        "text": ""
+      },
+      {
+        "type": "effigies",
+        "do": "sleep"
+      },
+      {
+        "type": "subtitle",
+        "text": "Tôi cắt đứa sáu tuổi ra khỏi ảnh, đặt vào cỗ hòm nhỏ.",
+        "duration": 4
+      },
+      {
+        "type": "wait",
+        "seconds": 4.5
+      },
+      {
+        "type": "beat",
+        "name": "selfBurn"
+      },
+      {
+        "type": "subtitle",
+        "text": "Lửa bén từ đầu ngón tay mình. Không đau. Giấy thì không biết đau.",
+        "duration": 4.5
+      },
+      {
+        "type": "wait",
+        "seconds": 5
+      },
+      {
+        "type": "entity",
+        "do": "vanish"
+      },
+      {
+        "type": "sound",
+        "sound": "creak",
+        "at": "frontDoor"
+      },
+      {
+        "type": "subtitle",
+        "text": "Cửa chính tự mở. Có tiếng bước chân đi vào, rất nhẹ.",
+        "duration": 4
+      },
+      {
+        "type": "wait",
+        "seconds": 4
+      },
+      {
+        "type": "sound",
+        "sound": "step",
+        "at": "hallEnd"
+      },
+      {
+        "type": "wait",
+        "seconds": 1.2
+      },
+      {
+        "type": "sound",
+        "sound": "step",
+        "at": "altar"
+      },
+      {
+        "type": "tension",
+        "add": -1
+      },
+      {
+        "type": "wait",
+        "seconds": 2
+      },
+      {
+        "type": "lights",
+        "state": "blackout"
+      },
+      {
+        "type": "wait",
+        "seconds": 2
+      },
+      {
+        "type": "ending",
+        "title": "Trả hồn",
+        "text": "Sáng hôm sau, chú Tư về. Cửa nhà mở toang.\nTrên bàn thờ có một đôi dép nhỏ, còn ướt, đặt ngay ngắn cạnh bát nhang. Dưới gầm bàn thờ, cỗ hòm nhỏ đã đóng nắp lại, lần này không cần đinh.\nTrong ảnh thờ vẫn còn năm người: ông, bà, mẹ, một đứa nhỏ sáu tuổi mờ dần như giấy bị nước loang — và Út người lớn, đứng phía sau.\n\nChú Tư nhìn người đang quỳ thắp nhang trước bàn thờ, gọi: “Út.”\nNgười đó quay lại. Cao hơn hồi trước một chút.\n\nBà thương hết.",
+        "final": true
       }
     ]
   },
